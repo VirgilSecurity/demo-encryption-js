@@ -1,0 +1,46 @@
+require('dotenv').config();
+const path = require('path');
+const express = require('express');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const boom = require('boom');
+const users = require('./users/userController');
+
+const app = express();
+
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(bodyParser.json());
+
+const publicPath = path.resolve(__dirname, '../public');
+app.use(express.static(publicPath));
+
+app.post('/users', (req, res, next) => {
+	users.create(req.body)
+		.then(user => res.send(user))
+		.catch(next);
+});
+
+app.get('/users', (req, res, next) => {
+	users.list(req.query.name)
+		.then(users => res.send(users))
+		.catch(next);
+});
+
+app.get('*', (req, res, next) => {
+	res.sendFile(path.join(publicPath , 'index.html'));
+});
+
+app.use(handleError);
+
+function handleError(err, req, res, next) {
+	if (!err.isBoom) {
+		console.error('Unexpected error: ', err);
+		err = boom.badImplementation('Internal server error.');
+	}
+
+	res.status(err.output.statusCode).json(err.output.payload);
+}
+
+module.exports = app;
