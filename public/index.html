@@ -14,6 +14,7 @@
 	<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment.min.js"></script>
 	<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/antd/3.0.0/antd.min.js"></script>
 	<script crossorigin src="https://cdn.virgilsecurity.com/packages/javascript/sdk/4.5.1/virgil-sdk.min.js"></script>
+	<script crossorigin src="https://cdn.rawgit.com/kentcdodds/ea2fdfc82f79228a6be641c78dc0e1b9/raw/0f792eb8dfb3bf993bdf50c9656f12090ed344e6/hoist-non-react-statics.umd.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -56,6 +57,81 @@
 
 	const { BrowserRouter, Link, Switch, Route, Redirect } = window.ReactRouterDOM;
 
+	// Application state container component
+	class Store extends React.Component {
+		initialState = { users: [], currentUser: null, encryptedMessage: '', decryptedMessage: '' };
+		state = this.initialState;
+
+		render() {
+			const handleError = (e) => {
+				console.error(e);
+				window.antd.message.error(e.message);
+			};
+
+			return this.props.render({
+				currentUser: this.state.currentUser,
+				users: this.state.users,
+				encryptedMessage: this.state.encryptedMessage,
+				decryptedMessage: this.state.decryptedMessage,
+				fetchUsers: () => {
+					http.get('/users')
+						.then(users => {
+							this.setState({ users: users });
+						})
+						.catch(handleError);
+				},
+				registerUser: ({ username, password }) => {
+					const key = virgilHelper.createKey();
+					const card = virgilHelper.createCardRequest(username, key);
+
+					http.post('/users/', { username, csr: card.export() })
+						.then(() => key.save(username, password))
+						.then(key => this.setState({ currentUser: { username, key } }))
+						.catch(handleError);
+				},
+				signIn: ({ username, password }) => {
+					return virgilHelper.loadKey(username, password)
+						.then(key => this.setState({ currentUser: { username, key } }))
+						.catch(handleError);
+				},
+				encrypt: ({ recipients, message }) => {
+					const virgilCardsPromise = Promise.all(
+						recipients.map(recipient => virgilHelper.getCard(recipient))
+					);
+
+					return virgilCardsPromise.then(virgilCards => {
+						return virgilHelper.encryptForMultiple(message, virgilCards).toString('base64');
+					})
+					.then(encryptedMessage => this.setState({ encryptedMessage }))
+					.catch(handleError);
+				},
+				decrypt: ({ ciphertext }) => {
+					return Promise.resolve()
+						.then(() => {
+							return this.state.currentUser.key.decrypt(ciphertext).toString('utf8');
+						})
+						.then(decryptedMessage => this.setState({ decryptedMessage }))
+						.catch(e => {
+							if (e.code === '90002') {
+								return Promise.reject(
+									new Error(
+										'Unable to decrypt the given data. ' +
+										'It hasn\'t been encrypted with your public key.'
+									)
+								);
+							}
+
+							return Promise.reject(e);
+						})
+						.catch(handleError);
+
+				}
+			});
+		}
+	}
+
+	// ------------ UTILS ------------
+
 	class StoreProvider extends React.Component {
 		static contextName = '__app_state__';
 
@@ -92,6 +168,33 @@
 	ConnectedStore.contextTypes = {
 		[StoreProvider.contextName]: PropTypes.object.isRequired
 	};
+
+	function withStore(Component) {
+		function Wrapper(props) {
+			return (
+				<ConnectedStore render={store => (
+					<Component {...props} store={store} />
+				)}/>
+			);
+		}
+
+		Wrapper.displayName = `withStore(${Component.displayName || Component.name})`;
+		Wrapper.propTypes = { innerRef: PropTypes.func };
+		Wrapper.WrappedComponent = Component;
+		return hoistNonReactStatics(Wrapper, Component);
+	}
+
+	const PrivateRoute = withStore(class extends React.Component {
+		render() {
+			const { component: Component, store, redirectTo, ...rest } = this.props;
+			const isAuthenticated = Boolean(store.currentUser);
+			if (isAuthenticated) {
+				return <Component store={store} {...rest} />;
+			} else {
+				return <Redirect to={redirectTo} />;
+			}
+		}
+	});
 
 	const http = (function () {
 		function handleResponse(res) {
@@ -172,72 +275,7 @@
 		}
 	})();
 
-	class Store extends React.Component {
-		initialState = { users: [], currentUser: null };
-		state = this.initialState;
-
-		render() {
-			const handleError = (e) => {
-				console.error(e);
-				window.antd.message.error(e.message);
-			};
-
-			return this.props.render({
-				currentUser: this.state.currentUser,
-				users: this.state.users,
-				fetchUsers: () => {
-					http.get('/users')
-						.then(users => {
-							this.setState({ users: users });
-						})
-						.catch(handleError);
-				},
-				registerUser: ({ username, password }) => {
-					const key = virgilHelper.createKey();
-					const card = virgilHelper.createCardRequest(username, key);
-
-					http.post('/users/', { username, csr: card.export() })
-						.then(() => key.save(username, password))
-						.then(key => this.setState({ currentUser: { username, key } }))
-						.catch(handleError);
-				},
-				signIn: ({ username, password }) => {
-					return virgilHelper.loadKey(username, password)
-						.then(key => this.setState({ currentUser: { username, key } }))
-						.catch(handleError);
-				},
-				encrypt: ({ recipients, message }) => {
-					const virgilCardsPromise = Promise.all(
-						recipients.map(recipient => virgilHelper.getCard(recipient))
-					);
-
-					return virgilCardsPromise.then(virgilCards => {
-						return virgilHelper.encryptForMultiple(message, virgilCards);
-					}).catch(handleError);
-				},
-				decrypt: ({ ciphertext }) => {
-					return Promise.resolve()
-						.then(() => {
-							return this.state.currentUser.key.decrypt(ciphertext).toString('utf8');
-						})
-						.catch(e => {
-							if (e.code === '90002') {
-								return Promise.reject(
-									new Error(
-										'Unable to decrypt the given data. ' +
-										'It hasn\'t been encrypted with your public key.'
-									)
-								);
-							}
-
-							return Promise.reject(e);
-						})
-						.catch(handleError);
-
-				}
-			});
-		}
-	}
+	// ------------ /UTILS ------------
 
 	const AuthForm = window.antd.Form.create()(class extends React.Component {
 		render() {
@@ -284,40 +322,40 @@
 		}
 	});
 
-	function RegisterForm(props) {
+	function RegisterForm() {
 		return (
-			<div>
-				<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
-				<AuthForm onSubmit={props.store.registerUser}/>
-				<div className="auth-form-footer">
-					<span>Have a key? </span>
-					<Link to="/auth/signin">Sign In</Link>
+			<ConnectedStore render={store => (
+				<div>
+					<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
+					<AuthForm onSubmit={store.registerUser}/>
+					<div className="auth-form-footer">
+						<span>Have a key? </span>
+						<Link to="/auth/signin">Sign In</Link>
+					</div>
 				</div>
-			</div>
+			)}/>
 		);
 	}
 
-	function LoginForm(props) {
+	function LoginForm() {
 		return (
-			<div>
-				<h2 className="auth-title">Sign in to continue encrypting and decrypting messages</h2>
-				<AuthForm onSubmit={props.store.signIn}/>
-				<div className="auth-form-footer">
-					<span>Don't have a key? </span>
-					<Link to="/auth/signup">Sign Up</Link>
+			<ConnectedStore render={store => (
+				<div>
+					<h2 className="auth-title">Sign in to continue encrypting and decrypting messages</h2>
+					<AuthForm onSubmit={store.signIn}/>
+					<div className="auth-form-footer">
+						<span>Don't have a key? </span>
+						<Link to="/auth/signup">Sign Up</Link>
+					</div>
 				</div>
-			</div>
+			)}/>
 		);
 	}
 
-	const EncryptForm = window.antd.Form.create()(class extends React.Component {
-		state = {
-			ciphertext: ''
-		};
-
+	const EncryptForm = withStore(window.antd.Form.create()(class extends React.Component {
 		render() {
 			const { getFieldDecorator } = this.props.form;
-			const { users } = this.props.store;
+			const { store } = this.props;
 			return (
 				<div>
 					<Form onSubmit={this.handleSubmit} className="demo-form">
@@ -327,7 +365,7 @@
 							})(
 								<Select placeholder="Whom to encrypt the message for" mode="multiple">
 									{
-										users.map(user => (
+										store.users.map(user => (
 											<Option key={user.id} value={user.virgilCardId}>{user.username}</Option>
 										))
 									}
@@ -346,9 +384,9 @@
 								Encrypt
 							</Button>
 						</FormItem>
-						{ this.state.ciphertext &&
+						{ store.encryptedMessage &&
 							<TextArea
-								value={this.state.ciphertext}
+								value={store.encryptedMessage}
 								autosize={{ minRows: 6, maxRows: 12 }}
 								readonly
 							/>
@@ -362,22 +400,16 @@
 			e.preventDefault();
 			this.props.form.validateFields((err, values) => {
 				if (!err) {
-					this.props.store.encrypt(values)
-						.then(ciphertext => {
-							this.setState({ ciphertext: ciphertext.toString('base64') });
-						});
+					this.props.store.encrypt(values);
 				}
 			});
 		}
-	});
+	}));
 
-	const DecryptForm = window.antd.Form.create()(class extends React.Component {
-		state = {
-			plaintext: ''
-		};
-
+	const DecryptForm = withStore(antd.Form.create()(class extends React.Component {
 		render() {
 			const { getFieldDecorator } = this.props.form;
+			const { store } = this.props;
 			return (
 				<div>
 					<Form onSubmit={this.handleSubmit} className="demo-form">
@@ -396,12 +428,12 @@
 								Decrypt
 							</Button>
 						</FormItem>
-						{ this.state.plaintext &&
-							<TextArea
-								value={this.state.plaintext}
-								autosize={{ minRows: 6, maxRows: 12 }}
-								readonly
-							/>
+						{ store.decryptedMessage &&
+						<TextArea
+							value={store.decryptedMessage}
+							autosize={{ minRows: 6, maxRows: 12 }}
+							readonly
+						/>
 						}
 					</Form>
 				</div>
@@ -412,14 +444,11 @@
 			e.preventDefault();
 			this.props.form.validateFields((err, values) => {
 				if (!err) {
-					this.props.store.decrypt(values)
-						.then(plaintext => {
-							this.setState({ plaintext });
-						});
+					this.props.store.decrypt(values);
 				}
 			});
 		}
-	});
+	}));
 
 	function UserProfile() {
 		return (
@@ -450,7 +479,7 @@
 		);
 	}
 
-	class Home extends React.Component {
+	const Home = withStore(class extends React.Component {
 		componentDidMount() {
 			this.props.store.fetchUsers();
 		}
@@ -479,92 +508,54 @@
 					</Sider>
 					<Layout>
 						<Content style={{ padding: '0 50px'}}>
-							<ConnectedStore render={store => this.renderContent(store)}/>
+							<Switch>
+								<Route path="/encrypt" component={EncryptForm} />
+								<Route path="/decrypt" component={DecryptForm}/>
+							</Switch>
 						</Content>
 						<AppFooter />
 					</Layout>
 				</Layout>
 			);
 		}
+	});
 
-		renderContent = (store) => {
-			return (
-				<Switch>
-					<Route path="/encrypt" render={() => this.renderEncrypt(store)}/>
-					<Route path="/decrypt" render={() => this.renderDecrypt(store)}/>
-				</Switch>
-			);
-		}
-
-		renderEncrypt(store) {
-			return <EncryptForm store={store} />;
-		}
-
-		renderDecrypt(store) {
-			return <DecryptForm store={store} />;
-		}
-	}
-
-	class Auth extends React.Component {
+	const Auth = withStore(class extends React.Component {
 		render() {
-			return (
-				<ConnectedStore render={store =>
-					store.currentUser
-					? <Redirect to='/encrypt' />
-					: (
-						<Layout className="layout">
-							<Header className="auth-header">
-								<Logo />
-							</Header>
-							<Content>
-								<Switch>
-									<Route path="/auth/signup" render={() => RegisterForm({store}) } />
-									<Route path="/auth/signin" render={() => LoginForm({store}) } />
-								</Switch>
-							</Content>
-							<AppFooter />
-						</Layout>
-					)
-				}/>
-			);
-		}
-	}
-
-	class PrivateRoute extends React.Component {
-		render() {
-			const { component: Component, render, store, redirectTo, ...rest } = this.props;
-			const isAuthenticated = Boolean(store.currentUser);
-			if (isAuthenticated) {
-				return Component ? <Component store={store} {...rest} /> : render({...rest, store});
-			} else {
-				return <Redirect to={redirectTo} />;
+			const { store } = this.props;
+			if (store.currentUser) {
+				return <Redirect to='/encrypt' />;
 			}
+
+			return (
+				<Layout className="layout">
+					<Header className="auth-header">
+						<Logo />
+					</Header>
+					<Content>
+						<Switch>
+							<Route path="/auth/signup" component={RegisterForm} />
+							<Route path="/auth/signin" component={LoginForm} />
+						</Switch>
+					</Content>
+					<AppFooter />
+				</Layout>
+			);
 		}
-	}
+	});
 
 	class App extends React.Component {
 		render() {
 			return (
 				<BrowserRouter>
 					<StoreProvider>
-						<ConnectedStore render={store => (
-							<Switch>
-								<Route path="/auth" component={Auth} />
-								<PrivateRoute
-									path="/"
-									render={(props) => this.renderHome(props, store)}
-									redirectTo="/auth/signin"
-									store={store}
-								/>
-							</Switch>
-						)}/>
+						<Switch>
+							<Route path="/auth" component={Auth} />
+							<PrivateRoute path="/" component={Home} redirectTo="/auth/signin" />
+						</Switch>
 					</StoreProvider>
 				</BrowserRouter>
 			);
-		}
-
-		renderHome = (props, store) => {
-			return <Home store={store} {...props} />
 		}
 	}
 
