@@ -19,6 +19,9 @@
 <div id="root"></div>
 
 <script>
+	var VIRGIL_APP_ACCESS_TOKEN = '{{VIRGIL_APP_ACCESS_TOKEN}}';
+</script>
+<script>
 	/*
 	* memoize.js
 	* by @philogb and @addyosmani
@@ -128,7 +131,7 @@
 
 	const virgilHelper = (function () {
 		const virgilApi = window.virgil.API({
-			accessToken: 'AT.987b418122b41b55aa1616dcb981745d5b9e609a0ab17cffde164b736f9532a6'
+			accessToken: VIRGIL_APP_ACCESS_TOKEN
 		});
 
 		return {
