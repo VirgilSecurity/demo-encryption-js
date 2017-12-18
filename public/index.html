@@ -8,13 +8,11 @@
 
 	<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
 	<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
-	<script crossorigin src="https://unpkg.com/react-router-dom/umd/react-router-dom.min.js"></script>
 	<script crossorigin src="https://unpkg.com/prop-types/prop-types.js"></script>
 	<script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 	<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment.min.js"></script>
 	<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/antd/3.0.0/antd.min.js"></script>
 	<script crossorigin src="https://cdn.virgilsecurity.com/packages/javascript/sdk/4.5.1/virgil-sdk.min.js"></script>
-	<script crossorigin src="https://cdn.rawgit.com/kentcdodds/ea2fdfc82f79228a6be641c78dc0e1b9/raw/0f792eb8dfb3bf993bdf50c9656f12090ed344e6/hoist-non-react-statics.umd.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -49,152 +47,365 @@
 	}
 </script>
 <script type="text/babel">
-	const { Form, Icon, Input, Button, Select, Avatar, Layout, Menu } = window.antd;
+	const { Form, Icon, Input, Button, Select, Avatar, Layout, Menu, message } = window.antd;
 	const { Item: FormItem } = Form;
 	const { TextArea } = Input;
 	const { Option } = Select;
 	const { Header, Content, Footer, Sider } = Layout;
 
-	const { BrowserRouter, Link, Switch, Route, Redirect } = window.ReactRouterDOM;
 
-	// Application state container component
-	class Store extends React.Component {
-		initialState = { users: [], currentUser: null, encryptedMessage: '', decryptedMessage: '' };
-		state = this.initialState;
+	class App extends React.Component {
+		state = {
+			currentUser: null
+		}
 
 		render() {
-			const handleError = (e) => {
-				console.error(e);
-				window.antd.message.error(e.message);
-			};
+			if (!this.state.currentUser) {
+				return <Auth register={this.register} login={this.login} />
+			}
 
-			return this.props.render({
-				currentUser: this.state.currentUser,
-				users: this.state.users,
-				encryptedMessage: this.state.encryptedMessage,
-				decryptedMessage: this.state.decryptedMessage,
-				fetchUsers: () => {
-					http.get('/users')
-						.then(users => {
-							this.setState({ users: users });
-						})
-						.catch(handleError);
-				},
-				registerUser: ({ username, password }) => {
-					const key = virgilHelper.createKey();
-					const card = virgilHelper.createCardRequest(username, key);
+			return <Home user={this.state.currentUser} />;
+		}
 
-					http.post('/users/', { username, csr: card.export() })
-						.then(() => key.save(username, password))
-						.then(key => this.setState({ currentUser: { username, key } }))
-						.catch(handleError);
-				},
-				signIn: ({ username, password }) => {
-					return virgilHelper.loadKey(username, password)
-						.then(key => this.setState({ currentUser: { username, key } }))
-						.catch(handleError);
-				},
-				encrypt: ({ recipients, message }) => {
-					const virgilCardsPromise = Promise.all(
-						recipients.map(recipient => virgilHelper.getCard(recipient))
-					);
+		register = ({ username, password }) => {
+			const key = virgilHelper.createKey();
+			const card = virgilHelper.createCardRequest(username, key);
 
-					return virgilCardsPromise.then(virgilCards => {
-						return virgilHelper.encryptForMultiple(message, virgilCards).toString('base64');
-					})
-					.then(encryptedMessage => this.setState({ encryptedMessage }))
-					.catch(handleError);
-				},
-				decrypt: ({ ciphertext }) => {
-					return Promise.resolve()
-						.then(() => {
-							return this.state.currentUser.key.decrypt(ciphertext).toString('utf8');
-						})
-						.then(decryptedMessage => this.setState({ decryptedMessage }))
-						.catch(e => {
-							if (e.code === '90002') {
-								return Promise.reject(
-									new Error(
-										'Unable to decrypt the given data. ' +
-										'It hasn\'t been encrypted with your public key.'
-									)
-								);
-							}
+			http.post('/users/', { username, csr: card.export() })
+				.then(() => key.save(username, password))
+				.then(key => this.setState({ currentUser: { username, key } }))
+				.catch(handleError);
+		}
 
-							return Promise.reject(e);
-						})
-						.catch(handleError);
+		login = ({ username, password }) => {
+			return virgilHelper.loadKey(username, password)
+				.then(key => this.setState({ currentUser: { username, key } }))
+				.catch(handleError);
+		}
+	}
 
+	// ------------ AUTHENTICATION ------------ //
+	class Auth extends React.Component {
+		state = {
+			isLoggingIn: true
+		}
+
+		render() {
+			return (
+				<Layout className="layout">
+					<Header className="auth-header">
+						<Logo />
+					</Header>
+					<Content>
+						{
+							this.state.isLoggingIn
+								? <LoginForm goToRegistration={this.goToRegistration} login={this.props.login} />
+								: <RegisterForm goToLogin={this.goToLogin} register={this.props.register}/>
+						}
+					</Content>
+					<AppFooter />
+				</Layout>
+			);
+		}
+
+		goToLogin = () => {
+			this.setState({ isLoggingIn: true });
+		}
+
+		goToRegistration = () => {
+			this.setState({ isLoggingIn: false });
+		}
+	}
+
+	function RegisterForm(props) {
+		return (
+			<div>
+				<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
+				<AuthForm onSubmit={props.register}/>
+				<div className="auth-form-footer">
+					<span>Have a key? </span>
+					<a href="#" onClick={props.goToLogin}>Sign In</a>
+				</div>
+			</div>
+		);
+	}
+
+	function LoginForm(props) {
+		return (
+			<div>
+				<h2 className="auth-title">Sign in to continue encrypting and decrypting messages</h2>
+				<AuthForm onSubmit={props.login}/>
+				<div className="auth-form-footer">
+					<span>Don't have a key? </span>
+					<a href="#" onClick={props.goToRegistration}>Sign Up</a>
+				</div>
+			</div>
+		);
+	}
+
+	const AuthForm = Form.create()(class extends React.Component {
+		render() {
+			const { getFieldDecorator } = this.props.form;
+			return (
+				<Form onSubmit={this.handleSubmit} className="demo-form">
+					<FormItem>
+						{getFieldDecorator('username', {
+							rules: [{ required: true, message: 'Please enter your username!' }],
+						})(
+							<Input
+								prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+								placeholder="Username"
+								autocomplete="username"
+							/>
+						)}
+					</FormItem>
+					<FormItem>
+						{getFieldDecorator('password', {
+							rules: [{ required: true, message: 'Please enter your password!' }],
+						})(
+							<Input
+								prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+								type="password"
+								placeholder="Private Key Password"
+								autocomplete="password"
+							/>
+						)}
+					</FormItem>
+					<FormItem>
+						<Button type="primary" htmlType="submit" className="demo-form-button">
+							Sign Up
+						</Button>
+					</FormItem>
+				</Form>
+			);
+		}
+
+		handleSubmit = (e) => {
+			e.preventDefault();
+			this.props.form.validateFields((err, values) => {
+				if (!err) {
+					this.props.onSubmit(values);
 				}
 			});
 		}
-	}
+	});
 
-	// ------------ UTILS ------------
+	// ------------ MAIN PAGE ------------ //
 
-	class StoreProvider extends React.Component {
-		static contextName = '__app_state__';
-
-		static Renderer = class extends React.Component {
-			static childContextTypes = {
-				[StoreProvider.contextName]: PropTypes.object.isRequired
-			};
-
-			getChildContext() {
-				return {
-					[StoreProvider.contextName]: this.props.store
-				};
-			}
-
-			render() {
-				return this.props.children;
-			}
-		};
+	class Home extends React.Component {
+		state = {
+			selectedTab: 'encrypt'
+		}
 
 		render() {
-			const { children, ...props } = this.props;
 			return (
-				<Store {...props} render={store => (
-					<StoreProvider.Renderer store={store} children={children} />
-				)}/>
+				<Layout className="layout">
+					<Sider className="sidebar">
+						<Logo />
+						<Menu
+							theme="dark"
+							mode="inline"
+							style={{ lineHeight: '64px' }}
+							defaultSelectedKeys={[ this.state.selectedTab ]}
+							onSelect={({ key }) => this.setState({ selectedTab: key })}
+						>
+							<Menu.Item key="encrypt">Encrypt</Menu.Item>
+							<Menu.Item key="decrypt">Decrypt</Menu.Item>
+						</Menu>
+						<div className="sidebar-footer">
+							<UserProfile user={this.props.user} />
+						</div>
+					</Sider>
+					<Layout>
+						<Content style={{ padding: '0 50px'}}>
+							{
+								this.state.selectedTab === 'encrypt'
+									? <EncryptForm user={this.props.user} />
+									: <DecryptForm user={this.props.user} />
+							}
+						</Content>
+						<AppFooter />
+					</Layout>
+				</Layout>
 			);
 		}
 	}
 
-	function ConnectedStore(props, context) {
-		return props.render(context[StoreProvider.contextName]);
+	function Logo() {
+		return (
+			<div className="logo">
+				<h1>Virgil Hello World</h1>
+			</div>
+		);
 	}
 
-	ConnectedStore.contextTypes = {
-		[StoreProvider.contextName]: PropTypes.object.isRequired
-	};
+	function UserProfile(props) {
+		return (
+			props.user &&
+			<div className="profile">
+				<Avatar icon="user" size="small" />
+				<span className="username">{props.user.username}</span>
+			</div>
+		);
+	}
 
-	function withStore(Component) {
-		function Wrapper(props) {
+	function AppFooter() {
+		return (
+			<Footer style={{ textAlign: 'center' }}>
+				2017 Virgil Security, Inc.
+			</Footer>
+		);
+	}
+
+	const EncryptForm = Form.create()(class extends React.Component {
+		state = {
+			users: [],
+			ciphertext: ''
+		}
+
+		componentDidMount() {
+			http.get('/users')
+				.then(users => {
+					this.setState({ users: users });
+				})
+				.catch(handleError);
+		}
+
+		render() {
+			const { getFieldDecorator } = this.props.form;
+			const { users, ciphertext } = this.state;
 			return (
-				<ConnectedStore render={store => (
-					<Component {...props} store={store} />
-				)}/>
+				<div>
+					<Form onSubmit={this.handleSubmit} className="demo-form">
+						<FormItem label="Recipients">
+							{getFieldDecorator('recipients', {
+								rules: [{ required: true, message: 'Please select recipient(s)', type: 'array' }]
+							})(
+								<Select placeholder="Whom to encrypt the message for" mode="multiple">
+									{
+										users.map(user => (
+											<Option key={user.id} value={user.virgilCardId}>{user.username}</Option>
+										))
+									}
+								</Select>
+							)}
+						</FormItem>
+						<FormItem label="Message">
+							{getFieldDecorator('message', {
+								rules: [{ required: true, message: 'Please enter the message!' }],
+							})(
+								<TextArea placeholder="Secret message" autosize={{ minRows: 2, maxRows: 12 }} />
+							)}
+						</FormItem>
+						<FormItem>
+							<Button type="primary" htmlType="submit" className="demo-form-button">
+								Encrypt
+							</Button>
+						</FormItem>
+						{ ciphertext &&
+						<TextArea
+							value={ciphertext}
+							autosize={{ minRows: 6, maxRows: 12 }}
+							readonly
+						/>
+						}
+					</Form>
+				</div>
 			);
 		}
 
-		Wrapper.displayName = `withStore(${Component.displayName || Component.name})`;
-		Wrapper.propTypes = { innerRef: PropTypes.func };
-		Wrapper.WrappedComponent = Component;
-		return hoistNonReactStatics(Wrapper, Component);
-	}
+		handleSubmit = (e) => {
+			e.preventDefault();
+			this.props.form.validateFields((err, values) => {
+				if (!err) {
+					this.encrypt(values);
+				}
+			});
+		}
 
-	const PrivateRoute = withStore(class extends React.Component {
-		render() {
-			const { component: Component, store, redirectTo, ...rest } = this.props;
-			const isAuthenticated = Boolean(store.currentUser);
-			if (isAuthenticated) {
-				return <Component store={store} {...rest} />;
-			} else {
-				return <Redirect to={redirectTo} />;
-			}
+		encrypt({ recipients, message }) {
+			const virgilCardsPromise = Promise.all(
+				recipients.map(recipient => virgilHelper.getCard(recipient))
+			);
+
+			return virgilCardsPromise.then(virgilCards => {
+				return virgilHelper.encryptForMultiple(message, virgilCards).toString('base64');
+			})
+				.then(ciphertext => this.setState({ ciphertext }))
+				.catch(handleError);
 		}
 	});
+
+	const DecryptForm = Form.create()(class extends React.Component {
+		state = {
+			plaintext: ''
+		}
+
+		render() {
+			const { getFieldDecorator } = this.props.form;
+			const { plaintext } = this.state;
+			return (
+				<div>
+					<Form onSubmit={this.handleSubmit} className="demo-form">
+						<FormItem label="Ciphertext">
+							{getFieldDecorator('ciphertext', {
+								rules: [{ required: true, message: 'Please enter the ciphertext!' }],
+							})(
+								<TextArea
+									placeholder="That long base64-encoded string you've got from Encrypt form"
+									autosize={{ minRows: 6, maxRows: 12 }}
+								/>
+							)}
+						</FormItem>
+						<FormItem>
+							<Button type="primary" htmlType="submit" className="demo-form-button">
+								Decrypt
+							</Button>
+						</FormItem>
+						{ plaintext &&
+						<TextArea
+							value={plaintext}
+							autosize={{ minRows: 6, maxRows: 12 }}
+							readonly
+						/>
+						}
+					</Form>
+				</div>
+			);
+		}
+
+		handleSubmit = (e) => {
+			e.preventDefault();
+			this.props.form.validateFields((err, values) => {
+				if (!err) {
+					this.decrypt(values);
+				}
+			});
+		}
+
+		decrypt({ ciphertext }) {
+			Promise.resolve()
+				.then(() => {
+					return this.props.user.key.decrypt(ciphertext).toString('utf8');
+				})
+				.then(plaintext => this.setState({ plaintext }))
+				.catch(e => {
+					if (e.code === '90002') {
+						return Promise.reject(
+							new Error(
+								'Unable to decrypt the given data. ' +
+								'It hasn\'t been encrypted with your public key.'
+							)
+						);
+					}
+
+					return Promise.reject(e);
+				})
+				.catch(handleError);
+		}
+	});
+
+	// ------------ UTILS ------------ //
 
 	const http = (function () {
 		function handleResponse(res) {
@@ -275,289 +486,10 @@
 		}
 	})();
 
-	// ------------ /UTILS ------------
-
-	const AuthForm = window.antd.Form.create()(class extends React.Component {
-		render() {
-			const { getFieldDecorator } = this.props.form;
-			return (
-				<Form onSubmit={this.handleSubmit} className="demo-form">
-					<FormItem>
-						{getFieldDecorator('username', {
-							rules: [{ required: true, message: 'Please enter your username!' }],
-						})(
-							<Input
-								prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-								placeholder="Username"
-							/>
-						)}
-					</FormItem>
-					<FormItem>
-						{getFieldDecorator('password', {
-							rules: [{ required: true, message: 'Please enter your password!' }],
-						})(
-							<Input
-								prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
-								type="password"
-								placeholder="Private Key Password"
-							/>
-						)}
-					</FormItem>
-					<FormItem>
-						<Button type="primary" htmlType="submit" className="demo-form-button">
-							Sign Up
-						</Button>
-					</FormItem>
-				</Form>
-			);
-		}
-
-		handleSubmit = (e) => {
-			e.preventDefault();
-			this.props.form.validateFields((err, values) => {
-				if (!err) {
-					this.props.onSubmit && this.props.onSubmit(values);
-				}
-			});
-		}
-	});
-
-	function RegisterForm() {
-		return (
-			<ConnectedStore render={store => (
-				<div>
-					<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
-					<AuthForm onSubmit={store.registerUser}/>
-					<div className="auth-form-footer">
-						<span>Have a key? </span>
-						<Link to="/auth/signin">Sign In</Link>
-					</div>
-				</div>
-			)}/>
-		);
-	}
-
-	function LoginForm() {
-		return (
-			<ConnectedStore render={store => (
-				<div>
-					<h2 className="auth-title">Sign in to continue encrypting and decrypting messages</h2>
-					<AuthForm onSubmit={store.signIn}/>
-					<div className="auth-form-footer">
-						<span>Don't have a key? </span>
-						<Link to="/auth/signup">Sign Up</Link>
-					</div>
-				</div>
-			)}/>
-		);
-	}
-
-	const EncryptForm = withStore(window.antd.Form.create()(class extends React.Component {
-		render() {
-			const { getFieldDecorator } = this.props.form;
-			const { store } = this.props;
-			return (
-				<div>
-					<Form onSubmit={this.handleSubmit} className="demo-form">
-						<FormItem label="Recipients">
-							{getFieldDecorator('recipients', {
-								rules: [{ required: true, message: 'Please select recipient(s)', type: 'array' }]
-							})(
-								<Select placeholder="Whom to encrypt the message for" mode="multiple">
-									{
-										store.users.map(user => (
-											<Option key={user.id} value={user.virgilCardId}>{user.username}</Option>
-										))
-									}
-								</Select>
-							)}
-						</FormItem>
-						<FormItem label="Message">
-							{getFieldDecorator('message', {
-								rules: [{ required: true, message: 'Please enter the message!' }],
-							})(
-								<TextArea placeholder="Secret message" autosize={{ minRows: 2, maxRows: 12 }} />
-							)}
-						</FormItem>
-						<FormItem>
-							<Button type="primary" htmlType="submit" className="demo-form-button">
-								Encrypt
-							</Button>
-						</FormItem>
-						{ store.encryptedMessage &&
-							<TextArea
-								value={store.encryptedMessage}
-								autosize={{ minRows: 6, maxRows: 12 }}
-								readonly
-							/>
-						}
-					</Form>
-				</div>
-			);
-		}
-
-		handleSubmit = (e) => {
-			e.preventDefault();
-			this.props.form.validateFields((err, values) => {
-				if (!err) {
-					this.props.store.encrypt(values);
-				}
-			});
-		}
-	}));
-
-	const DecryptForm = withStore(antd.Form.create()(class extends React.Component {
-		render() {
-			const { getFieldDecorator } = this.props.form;
-			const { store } = this.props;
-			return (
-				<div>
-					<Form onSubmit={this.handleSubmit} className="demo-form">
-						<FormItem label="Ciphertext">
-							{getFieldDecorator('ciphertext', {
-								rules: [{ required: true, message: 'Please enter the ciphertext!' }],
-							})(
-								<TextArea
-									placeholder="That long base64-encoded string you've got from Encrypt form"
-									autosize={{ minRows: 6, maxRows: 12 }}
-								/>
-							)}
-						</FormItem>
-						<FormItem>
-							<Button type="primary" htmlType="submit" className="demo-form-button">
-								Decrypt
-							</Button>
-						</FormItem>
-						{ store.decryptedMessage &&
-						<TextArea
-							value={store.decryptedMessage}
-							autosize={{ minRows: 6, maxRows: 12 }}
-							readonly
-						/>
-						}
-					</Form>
-				</div>
-			);
-		}
-
-		handleSubmit = (e) => {
-			e.preventDefault();
-			this.props.form.validateFields((err, values) => {
-				if (!err) {
-					this.props.store.decrypt(values);
-				}
-			});
-		}
-	}));
-
-	function UserProfile() {
-		return (
-			<ConnectedStore render={store =>
-				store.currentUser && (
-					<div className="profile">
-						<Avatar icon="user" size="small" />
-						<span className="username">{store.currentUser.username}</span>
-					</div>
-				)
-			} />
-		);
-	}
-
-	function Logo() {
-		return (
-			<div className="logo">
-				<h1>Virgil Hello World</h1>
-			</div>
-		);
-	}
-
-	function AppFooter() {
-		return (
-			<Footer style={{ textAlign: 'center' }}>
-				2017 Virgil Security, Inc.
-			</Footer>
-		);
-	}
-
-	const Home = withStore(class extends React.Component {
-		componentDidMount() {
-			this.props.store.fetchUsers();
-		}
-
-		render() {
-			return (
-				<Layout className="layout">
-					<Sider className="sidebar">
-						<Logo />
-						<Menu
-							theme="dark"
-							mode="inline"
-							style={{ lineHeight: '64px' }}
-							defaultSelectedKeys={[ this.props.location.pathname ]}
-						>
-							<Menu.Item key="/encrypt">
-								<Link to="/encrypt">Encrypt</Link>
-							</Menu.Item>
-							<Menu.Item key="/decrypt">
-								<Link to="/decrypt">Decrypt</Link>
-							</Menu.Item>
-						</Menu>
-						<div className="sidebar-footer">
-							<UserProfile />
-						</div>
-					</Sider>
-					<Layout>
-						<Content style={{ padding: '0 50px'}}>
-							<Switch>
-								<Route path="/encrypt" component={EncryptForm} />
-								<Route path="/decrypt" component={DecryptForm}/>
-							</Switch>
-						</Content>
-						<AppFooter />
-					</Layout>
-				</Layout>
-			);
-		}
-	});
-
-	const Auth = withStore(class extends React.Component {
-		render() {
-			const { store } = this.props;
-			if (store.currentUser) {
-				return <Redirect to='/encrypt' />;
-			}
-
-			return (
-				<Layout className="layout">
-					<Header className="auth-header">
-						<Logo />
-					</Header>
-					<Content>
-						<Switch>
-							<Route path="/auth/signup" component={RegisterForm} />
-							<Route path="/auth/signin" component={LoginForm} />
-						</Switch>
-					</Content>
-					<AppFooter />
-				</Layout>
-			);
-		}
-	});
-
-	class App extends React.Component {
-		render() {
-			return (
-				<BrowserRouter>
-					<StoreProvider>
-						<Switch>
-							<Route path="/auth" component={Auth} />
-							<PrivateRoute path="/" component={Home} redirectTo="/auth/signin" />
-						</Switch>
-					</StoreProvider>
-				</BrowserRouter>
-			);
-		}
-	}
+	const handleError = (e) => {
+		console.error(e);
+		message.error(e.message);
+	};
 
 	ReactDOM.render(
 		<App />,
