@@ -2,6 +2,9 @@
 
 A single page React application with Node.js backend demonstrating the use of Virgil Javascript SDK.
 
+> Important! You will need Node.js version >=4.x <6.x. Newer versions are not supported by 
+Virgil Crypto library at the time of this writing.
+
 ## Prerequisites
 
 To run this demo you will need:
