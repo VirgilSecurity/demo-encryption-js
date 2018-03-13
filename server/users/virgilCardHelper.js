@@ -1,5 +1,6 @@
 const virgil = require('virgil-sdk');
 const boom = require('boom');
+const config = require('../utils/config');
 
 module.exports = makeVirgilHelper();
 
@@ -32,8 +33,8 @@ function makeVirgilHelper() {
 function resolveAppKey() {
 	try {
 		return virgil.crypto.importPrivateKey(
-			process.env.VIRGIL_APP_PRIVATE_KEY,
-			process.env.VIRGIL_APP_PRIVATE_KEY_PASSWORD
+			config().VIRGIL_APP_PRIVATE_KEY,
+			config().VIRGIL_APP_PRIVATE_KEY_PASSWORD
 		);
 	} catch (e) {
 		console.error('Failed to import app private key', e);
@@ -42,14 +43,14 @@ function resolveAppKey() {
 }
 
 function resolveClient() {
-	if (!process.env.VIRGIL_APP_ACCESS_TOKEN) {
+	if (!config().VIRGIL_APP_ACCESS_TOKEN) {
 		throw new Error('Bad Configuration: VIRGIL_APP_ACCESS_TOKEN parameter is missing.');
 	}
-	return virgil.client(process.env.VIRGIL_APP_ACCESS_TOKEN);
+	return virgil.client(config().VIRGIL_APP_ACCESS_TOKEN);
 }
 
 function resolveSigner(appKey) {
-	const VIRGIL_APP_ID = process.env.VIRGIL_APP_ID;
+	const VIRGIL_APP_ID = config().VIRGIL_APP_ID;
 	if (!VIRGIL_APP_ID) {
 		throw new Error('Bad Configuration: VIRGIL_APP_ID parameter is missing.');
 	}
