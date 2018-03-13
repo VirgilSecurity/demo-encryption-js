@@ -1,4 +1,3 @@
-require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
@@ -8,6 +7,7 @@ const helmet = require('helmet');
 const boom = require('boom');
 const users = require('./users/userController');
 const streamReplace = require('./utils/streamReplace');
+const config = require('./utils/config');
 
 const app = express();
 const publicPath = path.resolve(__dirname, '../public');
@@ -39,7 +39,7 @@ app.use(handleError);
 function indexHandler(req, res) {
 	res.setHeader('Content-Type', 'text/html; charset=UTF-8');
 	fs.createReadStream(path.join(publicPath , 'index.html'))
-		.pipe(streamReplace('{{VIRGIL_APP_ACCESS_TOKEN}}', process.env.VIRGIL_APP_ACCESS_TOKEN))
+		.pipe(streamReplace('{{VIRGIL_APP_ACCESS_TOKEN}}', config().VIRGIL_APP_ACCESS_TOKEN))
 		.pipe(res);
 }
 
