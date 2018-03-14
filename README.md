@@ -2,9 +2,6 @@
 
 A single page React application with Node.js backend demonstrating the use of Virgil Javascript SDK.
 
-> Important! You will need Node.js version >=4.x <6.x. Newer versions are not supported by 
-Virgil Crypto library at the time of this writing.
-
 ## Prerequisites
 
 To run this demo you will need:
@@ -37,19 +34,24 @@ npm install
 
 ### Configure the server
 
-The server side reads configuration parameters (i.e. app id, private key, etc.) from `.env` file in the root folder.
+The server side reads configuration parameters (i.e. app card id, private key, etc.) from either `.env` or `config.json`
+ file in the root folder.
 The following parameters are required for the trigger to work:
 
 | Variable name | Description |
 | --- | --- |
-| VIRGIL_APP_ID | Id of your app from [Virgil Dashboard](https://developer.virgilsecurity.com/account/dashboard/) |
+| VIRGIL_APP_CARD_ID | Card Id of your app from [Virgil Dashboard](https://dashboard.virgilsecurity.com/) |
 | VIRGIL_APP_PRIVATE_KEY | Your app's private key as base64-encoded string |
 | VRIGIL_APP_PRIVATE_KEY_PASSWORD | Password used to protect the app's private key |
 | VIRGIL_APP_ACCESS_TOKEN | Your app's access token for Virgil Services |
 
-To setup locally, copy the `.env.example` file in the root project folder, save it under name `.env`
-and fill it in with your app's specific values. Please note, the `.env` file is included in `.gitignore`
-because it contains sensitive information and must not be committed into the repo.
+> Important! Please note that VIRGIL_APP_CARD_ID parameter must be set to your App's **Card Id**
+![Dashboard Screenshot](/img/dashboard.png)
+
+To setup locally, copy the `.env.example` or `config.example.json` file in the root project folder, save it under 
+ name `.env` or `config.json` respectively and fill it in with your app's specific values. Please note, the 
+ configuration files are included in `.gitignore` because they contain sensitive information and must not be 
+ committed into the repo.
 
 ```bash
 cp .env.example .env
