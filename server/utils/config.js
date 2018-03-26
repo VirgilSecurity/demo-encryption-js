@@ -6,7 +6,7 @@ const jsonPath = 'config.json';
 
 function getConfig () {
 	if (fs.existsSync(jsonPath)) {
-		const data = fs.readFileSync(jsonPath);
+		const data = fs.readFileSync(jsonPath, 'utf8');
 		return JSON.parse(data);
 	} else {
 		require('dotenv').config();
