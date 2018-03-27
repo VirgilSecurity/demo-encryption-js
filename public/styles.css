@@ -16,7 +16,11 @@ a:focus {
 }
 
 .auth-title {
-	margin: 50px auto;
+	margin: 50px auto 20px;
+	text-align: center;
+}
+
+.auth-subtitle {
 	text-align: center;
 }
 

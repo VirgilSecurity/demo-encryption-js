@@ -121,6 +121,7 @@
 		return (
 			<div>
 				<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
+				<p className="auth-subtitle">Open this page in different tab/window/browser and signup as different users</p>
 				<AuthForm onSubmit={props.register} submitText="Register"/>
 				<div className="auth-form-footer">
 					<span>Have a key? </span>
@@ -302,13 +303,17 @@
 								Encrypt
 							</Button>
 						</FormItem>
-						{ ciphertext &&
-						<TextArea
-							value={ciphertext}
-							autosize={{ minRows: 6, maxRows: 12 }}
-							readonly
-						/>
-						}
+						{ ciphertext && (
+							<div>
+								<p>Copy encrypted content below and try decrypt it in receiver’s chat windows</p>
+								<TextArea
+									value={ciphertext}
+									autosize={{ minRows: 6, maxRows: 12 }}
+									readonly
+									onClick={copyToClickboard}
+								/>
+							</div>
+						)}
 					</Form>
 				</div>
 			);
@@ -352,9 +357,10 @@
 								rules: [{ required: true, message: 'Please enter the ciphertext!' }],
 							})(
 								<TextArea
-									placeholder="That long base64-encoded string you've got from Encrypt form"
+									placeholder="Paste here the encrypted content and press the “decrypt” button"
 									autosize={{ minRows: 6, maxRows: 12 }}
 								/>
+
 							)}
 						</FormItem>
 						<FormItem>
@@ -490,6 +496,13 @@
 		console.error(e);
 		message.error(e.message);
 	};
+
+	const copyToClickboard = (e) => {
+		e.target.select();
+		e.target.setSelectionRange(0, e.target.value.length);
+		document.execCommand('copy');
+		message.info('Text copied')
+	}
 
 	ReactDOM.render(
 		<App />,
