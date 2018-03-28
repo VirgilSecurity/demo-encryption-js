@@ -87,7 +87,7 @@
 	// ------------ AUTHENTICATION ------------ //
 	class Auth extends React.Component {
 		state = {
-			isLoggingIn: true
+			isLoggingIn: false
 		}
 
 		render() {
@@ -120,7 +120,7 @@
 	function RegisterForm(props) {
 		return (
 			<div>
-				<h2 className="auth-title">Sign up to start encrypting and decrypting messages</h2>
+				<h2 className="auth-title">Register user to start encrypting and decrypting messages</h2>
 				<p className="auth-subtitle">Open this page in different tab/window/browser and signup as different users</p>
 				<AuthForm onSubmit={props.register} submitText="Register"/>
 				<div className="auth-form-footer">
@@ -253,7 +253,7 @@
 	function AppFooter() {
 		return (
 			<Footer style={{ textAlign: 'center' }}>
-				2017 Virgil Security, Inc.
+				{new Date().getFullYear()} Virgil Security, Inc.
 			</Footer>
 		);
 	}
