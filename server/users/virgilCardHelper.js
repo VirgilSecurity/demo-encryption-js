@@ -50,16 +50,16 @@ function resolveClient() {
 }
 
 function resolveSigner(appKey) {
-	const VIRGIL_APP_CARD_ID = config().VIRGIL_APP_CARD_ID;
-	if (!VIRGIL_APP_CARD_ID) {
-		throw new Error('Bad Configuration: VIRGIL_APP_CARD_ID parameter is missing.');
+	const VIRGIL_APP_ID = config().VIRGIL_APP_ID;
+	if (!VIRGIL_APP_ID) {
+		throw new Error('Bad Configuration: VIRGIL_APP_ID parameter is missing.');
 	}
 
 	const signer = virgil.requestSigner(virgil.crypto);
 
 	return {
 		signRequest(request) {
-			return signer.authoritySign(request, VIRGIL_APP_CARD_ID, appKey);
+			return signer.authoritySign(request, VIRGIL_APP_ID, appKey);
 		}
 	};
 }
