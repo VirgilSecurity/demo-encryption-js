@@ -40,13 +40,11 @@ The following parameters are required for the trigger to work:
 
 | Variable name | Description |
 | --- | --- |
-| VIRGIL_APP_CARD_ID | Card Id of your app from [Virgil Dashboard](https://dashboard.virgilsecurity.com/) |
+| VIRGIL_APP_ID | Id of your app from [Virgil Dashboard](https://dashboard.virgilsecurity.com/) |
 | VIRGIL_APP_PRIVATE_KEY | Your app's private key as base64-encoded string |
 | VRIGIL_APP_PRIVATE_KEY_PASSWORD | Password used to protect the app's private key |
 | VIRGIL_APP_ACCESS_TOKEN | Your app's access token for Virgil Services |
 
-> Important! Please note that VIRGIL_APP_CARD_ID parameter must be set to your App's **Card Id**
-![Dashboard Screenshot](/img/dashboard.png)
 
 To setup locally, copy the `.env.example` or `config.example.json` file in the root project folder, save it under 
  name `.env` or `config.json` respectively and fill it in with your app's specific values. Please note, the 
