@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Encryption Demo JS</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script crossorigin src="./lib/react.production.min.js"></script>
+	<script crossorigin src="./lib/react-dom.production.min.js"></script>
+    <script crossorigin src="./lib/prop-types.js"></script>
+    <script crossorigin src="./lib/virgil-crypto.browser.umd.min.js"></script>
+    <script crossorigin src="./lib/virgil-sdk.browser.umd.js"></script>
+    <script crossorigin src="./lib/babel.min.js" data-presets="es2017,stage-2"></script>
+    <script type="text/babel" src="./model.js"></script>
+    <script type="text/babel" src="./model_stub.js"></script>
+</head>
+
+<body>
+    <div class="chat-window">
+        <form class="login-form">
+            <label>
+                identity:
+                <input name="login" id="identity-input" placeholder="eg: your@mail.com" />
+            </label>
+            <button>login</button>
+        </form>
+        <label>
+            <input name="action" value="encrypt" type="radio" checked />
+            encrypt
+        </label>
+        <label>
+            <input name="action" value="decrypt" type="radio" />
+            decrypt
+        </label>
+        <form id="encrypt-form" class="encrypt-form">
+            <label>
+                send to: 
+                <input id="recipient-identity" name="recipient" placeholder="eg: your@mail.com" />
+            </label>
+            <br />
+            <label>
+                message:
+                <textarea id="encrypt-area">
+                    
+                </textarea>
+            </label>
+            <button>encrypt</button>
+        </form>
+        <form id="decrypt-form" class="decrypt-form hidden">
+            <label>
+                encrypted message:
+                <textarea id="decrypt-area">
+
+                </textarea>
+            </label>
+            
+            <button>decrypt</button>
+        </form>
+    </div>
+
+    <script type="text/babel" src="./controller.js"></script>
+</body>
+
+</html>
