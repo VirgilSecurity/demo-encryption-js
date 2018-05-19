@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Encryption Demo JS</title>
+    <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-    <iframe src="./view.html"></iframe>
-    <iframe src="./view.html"></iframe>
-    <iframe src="./view.html"></iframe>
+    <h1>Encryption Demo JS</h1>
+    <h4>version 5</h4>
+    <p>
+        Hello new virgil user!
+        <br />
+        Here you see 2 windows running in iframe with same code. <code>model.js</code> consist all 
+        encryption logic, fill free to explore.
+    </p>
+    <ol>
+        <li>
+            Login to all windows with different identities. It can be imaginary email, name or some 
+            uid. In first login crypto library generate public/private keypair for you. Public key 
+            with signature goes to card service. Private key stores in indexedDB in your browser.
+        </li>
+    </ol>
+    <iframe class="frame" src="./view.html"></iframe>
+    <iframe class="frame" src="./view.html"></iframe>
 </body>
 </html>
