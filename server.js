@@ -13,6 +13,9 @@ app.use(function(req, res, next) {
     next();
 });
 
+// Serve static
+app.use(express.static('public'))
+
 const crypto = new VirgilCrypto();
 const { appId, apiKeyId, apiPrivateKey } = require('./config');
 
