@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro');
+
 @font-face {
     font-family: 'Muller';
     font-weight: 400;
@@ -54,7 +56,6 @@
 
 html, body {
     font-family: 'Muller';
-    font-weight: 400;
     box-sizing: border-box;
     color: #333;
     padding: 0;
@@ -62,12 +63,16 @@ html, body {
     letter-spacing: 0.025em;
 }
 
+body {
+	max-width: 690px;
+	margin: 0 auto;
+}
+
 *,
 *::before,
 *::after {
     box-sizing: inherit;
     font-family: inherit;
-    font-weight: inherit;
     letter-spacing: inherit;
 }
 
@@ -91,27 +96,29 @@ button {
     border: 0;
     min-width: 200px;
 }
-
 button:hover {
     background-color: #DA322C;
     box-shadow: 0 18px 20px -15px rgba(158, 54, 33, 0.5);
 }
 
+button i {
+    margin-right: 20px;
+}
 
 input, textarea {
     border-radius: 3px;
-    border: 1px solid #EBEBEB;
+    border: 1px solid #333;
     padding: 16px;
     outline: 0;
     font-family: 'Lato';
     font-size: 14px;
 }
-input:not([type]) {
 
+input:not([type]) {
     background-color: white;
     height: 44px;
     transition: all 0.5s;
-    min-width: 200px;
+    min-width: 250px;
 }
 
 textarea {
@@ -119,11 +126,74 @@ textarea {
 }
 
 p {
-    margin: 20px;
+	margin: 20px 0px;
+	line-height: 1.5em;
+    font-family: 'Lato';
+}
+
+pre {
+	font-family: Inconsolata, monospace;
+	font-size: 0;
+	line-height: 0px;
+	white-space: pre-line;
+	background-color: #20232B;
+    color: white;
+    margin: 20px 0;
+    padding-top: 16px;
+	padding-bottom: 16px;
+	padding-right: 25px;
+	padding-left: 16px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	color: white;
+	border-radius: 3px;
+}
+
+code {
+	line-height: 15px;
+	font-size: 12px;
+	font-family: 'Source Code Pro', monospace;
+	white-space: pre;
+}
+
+pre.code-editor {
+	counter-reset: line;
+}
+code.code-line {
+    counter-increment: line;
+}
+
+code.code-line:before{
+	content: counter(line);
+	padding-right: 16px;
+	opacity: 0.25;
+	width: 30px;
+	text-align: right;
+	display: inline-block;
+}
+
+img {
+    display: block;
+    margin: 20px 0;
+}
+
+.step {
+	opacity: 0;
+	transition: all 1s;
+	margin-bottom: 40px;
+}
+
+.revealed {
+    opacity: 1;
 }
 
 .hidden {
     display: none !important;
+}
+
+.center {
+	display: block;
+	margin: 0 auto;
 }
 
 .frame {
@@ -134,24 +204,10 @@ p {
     float: left;
 }
 
-.login-form {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-}
-
 .login-form * {
     margin-bottom: 20px;
 }
 
 .main-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+
 }

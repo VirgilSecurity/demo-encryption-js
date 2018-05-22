@@ -1,72 +1,117 @@
 class Controller {
-    constructor(model) {
-        this.model = model;
-        this.isLogged = false;
-        
-        this.identityInput = document.getElementById('identity-input');
-        this.recipientIdentityInput = document.getElementById('recipient-identity');
-        this.loginForm = document.querySelector('.login-form');
-        this.encryptForm = document.getElementById('encrypt-form');
-        this.decryptForm = document.getElementById('decrypt-form');
-        
-        this.radios = document.querySelectorAll('input[name="action"]');
-        this.encryptArea = document.getElementById('encrypt-area');
-        this.decryptArea = document.getElementById('decrypt-area');
-        
-        this.loginForm.onsubmit = this.login;
-        this.encryptForm.onsubmit = this.encrypt;
-        this.decryptForm.onsubmit = this.decrypt;
-        this.radios.forEach(radio => radio.onchange = this.changeAction);
+    constructor(aliceSdk, bobSdk) {
+        this.aliceSdk = aliceSdk;
+        this.bobSdk = bobSdk;
+
+        this.intro = document.getElementById("intro");
+        document.getElementById("get-started").onclick = () => this.stepReveal(
+            "#step-1",
+            "#get-started"
+        );
+
+        this.cardInfo = document.querySelector("#step-1-1 pre");
+        this.loginForm = document.querySelector(".login-form");
+        this.identityInput = document.getElementById("identity-input");
+        this.createCardFunc = document.getElementById("create-card");
+
+        this.createCardFunc.innerHTML = this.displayFunction(
+            this.aliceSdk.createCard.toString()
+        );
+
+        this.createCardFunc.innerHTML +=
+            "\n" + this.displayCommands(this.createAliceAndBobCards.toString());
+
+        document.getElementById("create-card-button").onclick = () =>
+            this.runCode(
+                this.createAliceAndBobCards.bind(this),
+                "#step-1-1",
+                "#create-card-button"
+            );
+
+        window.onload = () => this.intro.classList.add("revealed");
     }
 
-    login = async (e) => {
-        e.preventDefault();
+    async createAliceAndBobCards() {
+        // this refers to our Controller instance
+        const [aliceCardAndKeyPair, bobCardAndKeyPair] = await Promise.all([
+            this.aliceSdk.createCard(),
+            this.bobSdk.createCard()
+        ]);
 
-        const identity = this.identityInput.value;
-        this.model.configure(identity);
-        const cards = await this.model.searchCards(identity);
+        const alicePrivateKey = virgilCrypto
+            .exportPrivateKey(aliceCardAndKeyPair.keyPair.privateKey)
+            .toString("base64");
 
-        if (!cards.length) await this.model.createCard(identity);
-        
-        this.loginForm.classList.add('hidden');
+        const bobPrivateKey = virgilCrypto
+            .exportPrivateKey(bobCardAndKeyPair.keyPair.privateKey)
+            .toString("base64");
+
+        this.showOutput(
+            "#step-1-1-output",
+            `Alice card.id: ${aliceCardAndKeyPair.card.id}\n` +
+            `Alice privateKey: ${alicePrivateKey}\n\n` +
+            `Bob card.id: ${bobCardAndKeyPair.card.id}\n` +
+            `Bob privateKey: ${bobPrivateKey}\n`
+        );
+
+        console.log(aliceCardAndKeyPair, bobCardAndKeyPair);
     }
 
-    changeAction = (e) => {
-        if (e.target.value === 'encrypt') {
-            this.decryptForm.classList.add('hidden');
-            this.encryptForm.classList.remove('hidden');
-        } else {
-            this.encryptForm.classList.add('hidden');
-            this.decryptForm.classList.remove('hidden');
-        }
+    stepReveal(stepSelector, buttonSelector) {
+        const step = document.querySelector(stepSelector);
+        const button = document.querySelector(buttonSelector);
+        console.log(button, buttonSelector)
+        step.classList.add("revealed");
+        button.classList.add("hidden");
+        step.scrollIntoView({
+            block: "start",
+            behavior: "smooth",
+        });
     }
 
-    encrypt = async (e) => {
-        e.preventDefault();
-        const message = this.encryptArea.value;
-        const recipientIdentity = this.recipientIdentityInput.value;
-        let encrypted;
-        try {
-            encrypted = await this.model.encrypt(message, recipientIdentity);
-        } catch (error) {
-            console.error(error);
-        }
-        prompt('encrypted message:', encrypted);
+    runCode(func, stepSelector, buttonSelector) {
+        func();
+        this.stepReveal(stepSelector, buttonSelector)
     }
 
+    displayFunction(funcBody) {
+        return this.generateCodeFromFunction(funcBody)
+            .map((line, i) => (i > 0 ? line.replace(/^\s{4}/, "") : line))
+            .map(this.transformToCode)
+            .join("\n")
+    }
 
-    decrypt = async (e) => {
-        e.preventDefault();
-        const decrypted = this.decryptArea.value;
-        let message;
-        try {
-            message = await this.model.decrypt(decrypted);
-        } catch (error) {
-            console.log(error);
-        }
+    displayCommands(funcBody) {
+        return this.generateCodeFromFunction(funcBody)
+            .map((line, i) => (i > 0 ? line.replace(/^\s{8}/, "") : line))
+            .filter((line, i, arr) => i !== 0 && i !== arr.length - 1)
+            .map(this.transformToCode)
+            .join('\n')
+    }
 
-        alert(message);
+    showOutput(outputSelector, text) {
+        const html = text
+            .split("\n")
+            .map(this.transformToOutput)
+            .join("\n");
+
+        document.querySelector(outputSelector).innerHTML = html;
+    }
+
+    generateCodeFromFunction(funcBody) {
+        return hljs
+            .highlight("js", funcBody)
+            .value
+            .split("\n");
+    }
+
+    transformToCode(text) {
+        return `<code class="code-line">${text}</code>`
+    }
+
+    transformToOutput(text) {
+        return `<code>${text}</code>`;
     }
 }
 
-const controller = new Controller(new Model());
+const controller = new Controller(new SDK('alice'), new SDK('bob'));

@@ -17,12 +17,12 @@ app.use(function(req, res, next) {
 app.use(express.static('public'))
 
 const crypto = new VirgilCrypto();
-const { appId, apiKeyId, apiPrivateKey } = require('./config');
+const { appId, apiKeyId, apiKey } = require('./config');
 
 const generator = new JwtGenerator({
     appId: appId,
     apiKeyId: apiKeyId,
-    apiKey: crypto.importPrivateKey(apiPrivateKey),
+    apiKey: crypto.importPrivateKey(apiKey),
     accessTokenSigner: new VirgilAccessTokenSigner(crypto)
 });
 

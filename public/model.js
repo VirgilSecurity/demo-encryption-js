@@ -1,43 +1,44 @@
-class Model {
-    constructor() {
-        this.crypto = new VirgilCrypto.VirgilCrypto()
-        this.keyStorage = new Virgil.KeyStorage();
-        this.cardCrypto = new VirgilCrypto.VirgilCardCrypto(this.crypto);
-        this.cardVerifier = new Virgil.VirgilCardVerifier(this.cardCrypto);
-    }
+const virgilCrypto = new VirgilCrypto.VirgilCrypto();
+const keyStorage = new Virgil.KeyStorage();
+const cardCrypto = new VirgilCrypto.VirgilCardCrypto(virgilCrypto);
+const cardVerifier = new Virgil.VirgilCardVerifier(cardCrypto);
 
-    configure(identity) {
+class SDK {
+    constructor(identity) {
         this.identity = identity;
-        const getFuncJwt = (jwtUrl) => ({ operation }) => fetch(jwtUrl, {
+
+        const getFuncJwt = ({ operation }) => fetch('http://localhost:3000/generate_jwt', {
             headers: new Headers({ 'Content-Type' : 'application/json'}),
             method: 'POST',
             body: JSON.stringify({ identity })
         }).then((res) => res.text());
-        
-            
-        const jwtProvider = new Virgil.CallbackJwtProvider(
-            getFuncJwt('http://localhost:3000/generate_jwt', identity)
-        );
+
+        const jwtProvider = new Virgil.CallbackJwtProvider(getFuncJwt);
 
         this.cardManager = new Virgil.CardManager({
-            cardCrypto: this.cardCrypto,
-            cardVerifier: this.cardVerifier,
+            cardCrypto: cardCrypto,
+            cardVerifier: cardVerifier,
             accessTokenProvider: jwtProvider,
             retryOnUnauthorized: true
         });
     }
 
     async createCard () {
-        const keyPair = this.crypto.generateKeys();
+        const keyPair = virgilCrypto.generateKeys();
 
-        this.keyStorage.save(this.identity, this.crypto.exportPrivateKey(keyPair.privateKey));
+        if (keyStorage.exists(this.identity)) keyStorage.remove(this.identity);
+
+        keyStorage.save(
+            this.identity,
+            virgilCrypto.exportPrivateKey(keyPair.privateKey)
+        );
 
         const card = await this.cardManager.publishCard({
             privateKey: keyPair.privateKey,
             publicKey: keyPair.publicKey
         });
 
-        return card;
+        return { card, keyPair };
     };
 
     async searchCards (identity) {
@@ -46,12 +47,12 @@ class Model {
 
     async encrypt (message, recipientIdentity) {
         const recipientCards = await this.searchCards(recipientIdentity);
-        const senderPrivateKeyBytes = await this.keyStorage.load(this.identity);
-        const senderPrivateKey = this.crypto.importPrivateKey(senderPrivateKeyBytes);
+        const senderPrivateKeyBytes = await keyStorage.load(this.identity);
+        const senderPrivateKey = virgilCrypto.importPrivateKey(senderPrivateKeyBytes);
 
         if (recipientCards.length > 0) {
             const recipientPublicKeys = recipientCards.map(card => card.publicKey);
-            const encryptedData = this.crypto.signThenEncrypt(
+            const encryptedData = virgilCrypto.signThenEncrypt(
                 message,
                 senderPrivateKey,
                 recipientPublicKeys
@@ -59,17 +60,26 @@ class Model {
 
             return encryptedData.toString('base64');
         }
+
+        throw new Error('Recipient cards not found');
     }
 
     async decrypt (message) {
         const privateKeyData = await this.keyStorage.load(this.identity);
-        const privateKey = this.crypto.importPrivateKey(privateKeyData);
+        const privateKey = virgilCrypto.importPrivateKey(privateKeyData);
 
-        const decryptedData = this.crypto.decrypt(
+        const decryptedData = virgilCrypto.decrypt(
             message,
             privateKey
         );
 
         return decryptedData.toString('utf8');
+    }
+
+    stringKeyPairRepresentation({ privateKey, publicKey }) {
+        return {
+            privateKey: this.crypto.exportPrivateKey(privateKey).toString('base64'),
+            publicKey: this.crypto.exportPublicKey(publicKey).toString('base64')
+        }
     }
 }

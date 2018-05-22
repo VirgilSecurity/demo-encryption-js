@@ -7,51 +7,61 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Encryption Demo JS</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+        crossorigin="anonymous">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
     <script crossorigin src="./lib/virgil-crypto.browser.umd.js"></script>
     <script crossorigin src="./lib/virgil-sdk.browser.umd.js"></script>
-    <script crossorigin src="./lib/babel.min.js" data-presets="es2017,stage-2"></script>
-    <script type="text/babel" src="./model.js"></script>
+    <script src="./model.js"></script>
 </head>
-<body>
-    <div class="chat-window">
-        <form class="login-form">
-            <label for="identity-input">
-                Hello, stranger! Please enter your identity:
-            </label>
-            <input name="login" id="identity-input" placeholder="eg: your@mail.com" />
-            <button>login</button>
-        </form>
-        I want to: 
-        <label>
-            <input name="action" value="encrypt" type="radio" checked />
-            encrypt
-        </label>
-        <label>
-            <input name="action" value="decrypt" type="radio" />
-            decrypt
-        </label>
-        <form id="encrypt-form" class="main-form">
-            <label for="recipient-identity">
-                send to: 
-            </label>
-            <input id="recipient-identity" name="recipient" placeholder="eg: your@mail.com" />
-            <br />
-            <label for="encrypt-area">
-                message:
-            </label>
-            <textarea rows="4" id="encrypt-area"></textarea>
-            <button>encrypt</button>
-        </form>
-        <form id="decrypt-form" class="main-form hidden">
-            <label for="decrypt-area">
-                encrypted message:
-            </label>
-            <textarea rows="4" id="decrypt-area"></textarea>
-            <button>decrypt</button>
-        </form>
-    </div>
 
-    <script type="text/babel" src="./controller.js"></script>
+<body>
+    <h1>Encryption Demo JS</h1>
+    <h4>version 5</h4>
+    <div id="intro" class="step">
+        <p>This tutorial app explains the basics of using Virgil’s SDK. By the end of the tutorial, you’ll
+            be a master of End-to-End Encryption.
+        </p>
+        <p>
+            <b>What is E2EE?</b> When you type in a chat message in your mobile app, it gets “client-side”
+            encrypted on the device (or in your browser) and gets decrypted only when your chat partner
+            received and displays the message in her chat window.
+        </p>
+        <img src="images/image-1.png" />
+        <p>Because data is encrypted on the client devices, neither the networks, nor the servers/clouds,
+            nor you have a clue of what the heck your users are chatting about.
+        </p>
+        <button id="get-started" class="center">Get started</button>
+    </div>
+    <div id="step-1" class="step">
+        <h2>Step 1: Create & publish user keys at signup</h2>
+        <p>Generate a private & public key for your users when you sign them up.</p>
+        <p>
+            <i>
+                What’s a private/public key pair? You give out your public key to all users, who’ll use it to encrypt
+                data for you that only your private key can decrypt.
+            </i>
+        </p>
+        <p></p>
+        <img src="./images/Image-2.png" />
+        <p>
+            Lets create cards for Alice and Bob with our createCard function:
+        </p>
+        <pre class="code-editor" id="create-card"></pre>
+        <button id="create-card-button">
+            <i class="fas fa-play"></i>"run" code</button>
+        </form>
+        <div id="step-1-1" class="step">
+            <pre id="step-1-1-output">
+                <code>creating cards....</code>
+			</pre>
+            <a target="_blank" href="https://github.com/VirgilSecurity/demo-encryption-js/blob/v5/public/model.js#L30">
+                code
+            </a>
+        </div>
+    </div>
+    <script src="./controller.js"></script>
 </body>
 
 </html>
