@@ -3,7 +3,7 @@ const keyStorage = new Virgil.KeyStorage();
 const cardCrypto = new VirgilCrypto.VirgilCardCrypto(virgilCrypto);
 const cardVerifier = new Virgil.VirgilCardVerifier(cardCrypto);
 
-class SDK {
+class Device {
     constructor(identity) {
         this.identity = identity;
 
