@@ -2,22 +2,31 @@ window.onload = function(event) {
     document.getElementById("intro").classList.add("revealed");
     setTimeout(() => window.scrollTo(0, 0), 100);
 
-    document.getElementById("get-started").onclick = () =>
-        this.stepReveal("#step-1", "#get-started");
-
-    displayCode(
-        "#create-card",
-        displayFunction(Device.prototype.createCard),
-        displaySnippet(createAliceAndBobCards)
-    );
-
-    document.getElementById("create-card-button").onclick = () =>
-        this.runCode(
-            createAliceAndBobCards,
-            "#step-1-1",
-            "#create-card-button"
-        );
+    document.querySelectorAll("button").forEach(buttonsScripts)
+    document.querySelectorAll("pre").forEach(preScripts)
 };
+
+function buttonsScripts(buttonEl) {
+    const funcs = [];
+
+    if (buttonEl.hasAttribute('show')) {
+        const selector = buttonEl.getAttribute('show');
+        funcs.push(() => stepReveal(selector, buttonEl));
+    }
+    if (buttonEl.hasAttribute('run')) {
+        funcs.push(() => eval(buttonEl.getAttribute('run')));
+    }
+    buttonEl.onclick = () => funcs.forEach(func => func());
+}
+
+function preScripts(preEl) {
+    if (preEl.hasAttribute('func')) {
+        preEl.innerHTML = displayFunction(eval(preEl.getAttribute('func')));
+    }
+    if (preEl.hasAttribute('snippet')) {
+        preEl.innerHTML = displaySnippet(eval(preEl.getAttribute('snippet')));
+    }
+}
 
 function displayCode(selector) {
     const el = document.querySelector(selector);
@@ -25,9 +34,8 @@ function displayCode(selector) {
     el.innerHTML = html;
 }
 
-function stepReveal(stepSelector, buttonSelector) {
+function stepReveal(stepSelector, button) {
     const step = document.querySelector(stepSelector);
-    const button = document.querySelector(buttonSelector);
 
     step.classList.add("revealed");
     button.classList.add("hidden");
@@ -39,6 +47,7 @@ function stepReveal(stepSelector, buttonSelector) {
 }
 
 function runCode(func, stepSelector, buttonSelector) {
+    console.log('run code', arguments)
     func();
     stepReveal(stepSelector, buttonSelector);
 }

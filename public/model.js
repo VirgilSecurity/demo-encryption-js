@@ -23,6 +23,10 @@ class Device {
         });
     }
 
+    loadKey() {
+        return keyStorage.load(this.identity);
+    }
+
     async createCard () {
         const keyPair = virgilCrypto.generateKeys();
 
@@ -45,7 +49,23 @@ class Device {
         return await this.cardManager.searchCards(identity);
     }
 
-    async encrypt (message, recipientIdentity) {
+    async encrypt (message, senderIdentity) {
+        const senderCards = await this.searchCards(senderIdentity);
+
+        if (senderCards.length > 0) {
+            const bobPublicKeys = senderCards.map(card => card.publicKey);
+            const encryptedData = virgilCrypto.encrypt(
+                message,
+                bobPublicKeys
+            );
+
+            return encryptedData.toString('base64');
+        }
+
+        throw new Error('Recipient cards not found');
+    }
+
+    async signThenEncrypt (message, recipientIdentity) {
         const recipientCards = await this.searchCards(recipientIdentity);
         const senderPrivateKeyBytes = await keyStorage.load(this.identity);
         const senderPrivateKey = virgilCrypto.importPrivateKey(senderPrivateKeyBytes);
@@ -65,7 +85,7 @@ class Device {
     }
 
     async decrypt (message) {
-        const privateKeyData = await this.keyStorage.load(this.identity);
+        const privateKeyData = await keyStorage.load(this.identity);
         const privateKey = virgilCrypto.importPrivateKey(privateKeyData);
 
         const decryptedData = virgilCrypto.decrypt(
@@ -76,10 +96,21 @@ class Device {
         return decryptedData.toString('utf8');
     }
 
-    stringKeyPairRepresentation({ privateKey, publicKey }) {
-        return {
-            privateKey: this.crypto.exportPrivateKey(privateKey).toString('base64'),
-            publicKey: this.crypto.exportPublicKey(publicKey).toString('base64')
+    async decryptThenVerify (message, senderIdentity) {
+        const senderCards = await this.searchCards(senderIdentity);
+        const privateKeyData = await keyStorage.load(this.identity);
+        const privateKey = virgilCrypto.importPrivateKey(privateKeyData);
+
+        if (senderCards.length > 0) {
+            const senderPublicKeys = senderCards.map(card => card.publicKey);
+            const decryptedData = virgilCrypto.decryptThenVerify(
+                message,
+                privateKey,
+                senderPublicKeys
+            );
+            return decryptedData.toString('utf8');
         }
+
+        throw new Error('Sender cards not found');
     }
 }
