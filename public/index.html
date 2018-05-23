@@ -15,6 +15,7 @@
     <script crossorigin src="https://unpkg.com/virgil-sdk@5.0.0-alpha.2/dist/virgil-sdk.browser.umd.min.js"></script>
     <script src="./model.js"></script>
 </head>
+
 <body>
     <div id="intro" class="step">
         <h1>Encryption Demo JS</h1>
@@ -47,6 +48,10 @@
         </p>
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/JSON_WEB_TOKEN.png"
         />
+        <p>
+            There is configuration part of your Device class (for the full code go
+            <a href="https://github.com/VirgilSecurity/demo-encryption-js/blob/v5/public/model.js#L1" target="_blank">here</a>):
+        </p>
         <pre class="code-editor" func="Device.prototype.configure"></pre>
         <pre class="code-editor" snippet="setUpSdk"></pre>
         <button show="#step-1" run="setUpSdk()">
@@ -125,6 +130,10 @@
             <pre id="step-3-2-output">
                 <code>// waiting for message encrypting </code>
             </pre>
+            <p>
+                That's it! Fill free to open developer console and try to debug some code from snippet or modify this
+                project from your editor.
+            </p>
         </div>
     </div>
     <script src="./_renderUtils.js"></script>

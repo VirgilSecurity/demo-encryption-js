@@ -27,6 +27,8 @@ class Device {
     async createCard () {
         const keyPair = virgilCrypto.generateKeys();
 
+        // this made for demo purposes, in case you will want to complete demo again
+        // you don't need to delete your private key, if you have one and you can use one card for a user
         if (keyStorage.exists(this.identity)) keyStorage.remove(this.identity);
 
         keyStorage.save(

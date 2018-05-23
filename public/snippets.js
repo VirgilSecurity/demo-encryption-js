@@ -40,7 +40,7 @@ async function loadKey() {
 }
 
 async function encryptAndDecrypt() {
-    const encrypted = await aliceDevice.encrypt("hello", "bob");
+    const encrypted = await aliceDevice.encrypt("Hello, how are you?", "bob");
 
     showOutput(
         "#step-2-1-output",
@@ -56,7 +56,7 @@ async function encryptAndDecrypt() {
 }
 
 async function signAndVerify() {
-    const encrypted = await aliceDevice.signThenEncrypt('hello bob, that\'s truly Alice', 'bob');
+    const encrypted = await aliceDevice.signThenEncrypt('Hello Bob, that\'s truly Alice!', 'bob');
 
     showOutput(
         "#step-3-1-output",

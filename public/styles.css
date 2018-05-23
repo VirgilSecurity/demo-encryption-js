@@ -177,6 +177,17 @@ img {
     margin: 20px 0;
 }
 
+a {
+    text-decoration: none;
+	color: #9E3621;
+	font-weight: 500;
+	transition: all 0.5s;
+}
+
+a:hover {
+	color: #DA322C;
+}
+
 .step {
     opacity: 0;
     display: none;
