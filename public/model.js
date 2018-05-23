@@ -1,19 +1,20 @@
-const virgilCrypto = new VirgilCrypto.VirgilCrypto();
-const keyStorage = new Virgil.KeyStorage();
-const cardCrypto = new VirgilCrypto.VirgilCardCrypto(virgilCrypto);
-const cardVerifier = new Virgil.VirgilCardVerifier(cardCrypto);
-
 class Device {
-    constructor(identity) {
+    configure(identity) {
+        // this refers to Device instance
         this.identity = identity;
 
-        const getFuncJwt = ({ operation }) => fetch('http://localhost:3000/generate_jwt', {
+        window.virgilCrypto = new VirgilCrypto.VirgilCrypto();
+        window.keyStorage = new Virgil.KeyStorage();
+        window.cardCrypto = new VirgilCrypto.VirgilCardCrypto(virgilCrypto);
+        window.cardVerifier = new Virgil.VirgilCardVerifier(cardCrypto);
+
+        const getJwt = () => fetch('http://localhost:3000/generate_jwt', {
             headers: new Headers({ 'Content-Type' : 'application/json'}),
             method: 'POST',
             body: JSON.stringify({ identity })
         }).then((res) => res.text());
 
-        const jwtProvider = new Virgil.CallbackJwtProvider(getFuncJwt);
+        const jwtProvider = new Virgil.CallbackJwtProvider(getJwt);
 
         this.cardManager = new Virgil.CardManager({
             cardCrypto: cardCrypto,
@@ -21,10 +22,6 @@ class Device {
             accessTokenProvider: jwtProvider,
             retryOnUnauthorized: true
         });
-    }
-
-    loadKey() {
-        return keyStorage.load(this.identity);
     }
 
     async createCard () {
@@ -45,12 +42,8 @@ class Device {
         return { card, keyPair };
     };
 
-    async searchCards (identity) {
-        return await this.cardManager.searchCards(identity);
-    }
-
     async encrypt (message, senderIdentity) {
-        const senderCards = await this.searchCards(senderIdentity);
+        const senderCards = await this.cardManager.searchCards(senderIdentity);
 
         if (senderCards.length > 0) {
             const bobPublicKeys = senderCards.map(card => card.publicKey);
@@ -66,7 +59,7 @@ class Device {
     }
 
     async signThenEncrypt (message, recipientIdentity) {
-        const recipientCards = await this.searchCards(recipientIdentity);
+        const recipientCards = await this.cardManager.searchCards(recipientIdentity);
         const senderPrivateKeyBytes = await keyStorage.load(this.identity);
         const senderPrivateKey = virgilCrypto.importPrivateKey(senderPrivateKeyBytes);
 
@@ -97,7 +90,7 @@ class Device {
     }
 
     async decryptThenVerify (message, senderIdentity) {
-        const senderCards = await this.searchCards(senderIdentity);
+        const senderCards = await this.cardManager.searchCards(senderIdentity);
         const privateKeyData = await keyStorage.load(this.identity);
         const privateKey = virgilCrypto.importPrivateKey(privateKeyData);
 

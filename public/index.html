@@ -15,11 +15,10 @@
     <script crossorigin src="./lib/virgil-sdk.browser.umd.js"></script>
     <script src="./model.js"></script>
 </head>
-
 <body>
-    <h1>Encryption Demo JS</h1>
-    <h4>version 5</h4>
     <div id="intro" class="step">
+        <h1>Encryption Demo JS</h1>
+        <h4>version 5</h4>
         <p>This tutorial app explains the basics of using Virgil’s SDK. By the end of the tutorial, you’ll
             be a master of End-to-End Encryption.
         </p>
@@ -32,7 +31,27 @@
         <p>Because data is encrypted on the client devices, neither the networks, nor the servers/clouds,
             nor you have a clue of what the heck your users are chatting about.
         </p>
-        <button show="#step-1" class="center">Get started</button>
+        <button show="#step-0" class="center">Get started</button>
+    </div>
+    <div id="step-0" class="step">
+        <h2>Step 0: Configure SDK</h2>
+        <p>
+            First of all we need to configure our client side SDK with all necessary libraries. We offer our own
+            solutions, like VirgilCrypto or KeyStorage, but you can use your own solutions if you don't
+            trust us (and you don't have to!).
+        </p>
+        <p>
+            Here you can see flow for authentication calls to Virgil Card Service and Your App Server. Since we simplify
+            demo server to one endpoint which respond us with JWT token, you don't need to authenticate
+            yourself on demo server.
+        </p>
+        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/JSON_WEB_TOKEN.png"
+        />
+        <pre class="code-editor" func="Device.prototype.configure"></pre>
+        <pre class="code-editor" snippet="setUpSdk"></pre>
+        <button show="#step-1" run="setUpSdk()">
+            <i class="fas fa-play"></i>"run" code and go to next step
+        </button>
     </div>
     <div id="step-1" class="step">
         <h2>Step 1: Create & publish user keys at signup</h2>
@@ -49,93 +68,63 @@
         </p>
         <pre class="code-editor" func="Device.prototype.createCard"></pre>
         <pre class="code-editor" snippet="createAliceAndBobCards"></pre>
-        <button show="#step-1-1" run="createAliceAndBobCards()">
+        <button show="#step-1-1" toBottom run="createAliceAndBobCards()">
             <i class="fas fa-play"></i>"run" code
         </button>
         <div id="step-1-1" class="step">
             <pre id="step-1-output">
                 <code>creating cards....</code>
 			</pre>
-            <a target="_blank" href="https://github.com/VirgilSecurity/demo-encryption-js/blob/v5/public/model.js#L30">
-                code
-            </a>
             <button show="#step-2">Next Step</button>
         </div>
     </div>
     <div id="step-2" class="step">
-        <h2>Step 2: Load private keys at login</h2>
-        <p>
-            In your client-side login routine, load the user’s private key from local storage/keychain. The loadKey
-            function will use the platform’s default key store:
-        </p>
-        <pre class="code-editor" func="Device.prototype.loadKey"></pre>
-        <pre class="code-editor" snippet="loadKey"></pre>
-        <button show="#step-2-1" run="loadKey()">
-            <i class="fas fa-play"></i>"run" code</button>
-        <div id="step-2-1" class="step">
-            <pre id="step-2-output"></pre>
-            <button show="#step-3">Next Step</button>
-        </div>
-    </div>
-    <div id="step-3" class="step">
-        <h2>Step 3: End-to-End Encrypt & Decrypt</h2>
+        <h2>Step 2: End-to-End Encrypt & Decrypt</h2>
         <p>
             Now, your users can simply look up each other’s public keys by their user IDs and encrypt data to each
             other:
         </p>
+        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_encryption.png"
+        />
+        <pre class="code-editor" func="Device.prototype.decrypt"></pre>
+        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_decryption.png"
+        />
         <pre class="code-editor" func="Device.prototype.encrypt"></pre>
-        <pre class="code-editor" snippet="encrypt"></pre>
-        <button show="#step-3-1" run="encrypt()">
+        <pre class="code-editor" snippet="encryptAndDecrypt"></pre>
+        <button show="#step-2-1" toBottom run="encryptAndDecrypt()">
+            <i class="fas fa-play"></i>"run" code
+        </button>
+        <div id="step-2-1" class="step">
+            <pre id="step-2-1-output">
+                <code>// loading bob cards and encrypting message and then decrypting</code>
+            </pre>
+            <pre id="step-2-2-output">
+                <code>// waiting for message encryption</code>
+            </pre>
+            <button show="#step-3">Next Step</button>
+        </div>
+    </div>
+    <div id="step-3" class="step">
+        <h2>And finally: Sign and Verify</h2>
+        <p>
+            How does Bob know that the message was indeed sent by Alice? Simple: Alice signs the message with her
+            private key and Bob verifies the signature using Alice’s public key!
+        </p>
+        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/encrypt_data.png" />
+        <pre class="code-editor" func="Device.prototype.signThenEncrypt"></pre>
+        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/decrypt_data.png" />
+        <pre class="code-editor" func="Device.prototype.decryptThenVerify"></pre>
+        <pre class="code-editor" snippet="signAndVerify"></pre>
+        <button show="#step-3-1" toBottom run="signAndVerify()">
             <i class="fas fa-play"></i>"run" code
         </button>
         <div id="step-3-1" class="step">
             <pre id="step-3-1-output">
                 <code>// loading bob cards and encrypting message</code>
             </pre>
-            <button show="#step-3-2">Next Step</button>
-        </div>
-        <div id="step-3-2" class="step">
-            <pre class="code-editor" func="Device.prototype.decrypt"></pre>
-            <pre class="code-editor" snippet="decrypt"></pre>
-            <button show="#step-3-3" run="decrypt()">
-                <i class="fas fa-play"></i>"run" code
-            </button>
-            <div id="step-3-3" class="step">
-                <pre id="step-3-3-output">
-                    // loading bob cards and encrypting message and then decrypting
-                </pre>
-                <button show="#step-4">Next Step</button>
-            </di>
-        </div>
-    </div>
-    <div id="step-4" class="step">
-        <h2>And finally: Sign and Verify</h2>
-        <p>
-            How does Bob know that the message was indeed sent by Alice? Simple: Alice signs the message with her
-            private key and Bob verifies the signature using Alice’s public key!
-        </p>
-        <pre class="code-editor" func="Device.prototype.signThenEncrypt"></pre>
-        <pre class="code-editor" snippet="signThenEncrypt"></pre>
-        <button show="#step-4-1" run="signThenEncrypt()">
-            <i class="fas fa-play"></i>"run" code
-        </button>
-        <div id="step-4-1" class="step">
-            <pre id="step-4-1-output">
-                <code>// loading bob cards and encrypting message</code>
+            <pre id="step-3-2-output">
+                <code>// waiting for message encrypting </code>
             </pre>
-            <button show="#step-4-2">Next Step</button>
-        </div>
-        <div id="step-4-2" class="step">
-            <pre class="code-editor" func="Device.prototype.decrypt"></pre>
-            <pre class="code-editor" snippet="decryptThenVerify"></pre>
-            <button show="#step-4-3" run="decryptThenVerify()">
-                <i class="fas fa-play"></i>"run" code
-            </button>
-            <div id="step-4-3" class="step">
-                <pre id="step-4-3-output">
-                    // loading bob cards and encrypting message and then decrypting
-                </pre>
-            </div>
         </div>
     </div>
     <script src="./_renderUtils.js"></script>

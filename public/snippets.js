@@ -1,5 +1,9 @@
-const aliceDevice = new Device('alice');
-const bobDevice = new Device('bob');
+async function setUpSdk() {
+    window.aliceDevice = new Device();
+    window.bobDevice = new Device();
+    aliceDevice.configure('alice');
+    bobDevice.configure('bob');
+}
 
 async function createAliceAndBobCards() {
     const [ aliceCardAndKeyPair, bobCardAndKeyPair ] = await Promise.all([
@@ -35,40 +39,34 @@ async function loadKey() {
     );
 }
 
-async function encrypt() {
+async function encryptAndDecrypt() {
     const encrypted = await aliceDevice.encrypt("hello", "bob");
+
+    showOutput(
+        "#step-2-1-output",
+        `encrypted message: ${encrypted}`
+    );
+
+    const decrypted = await bobDevice.decrypt(encrypted);
+
+    showOutput(
+        "#step-2-2-output",
+        `decrypted message: ${decrypted}`
+    );
+}
+
+async function signAndVerify() {
+    const encrypted = await aliceDevice.signThenEncrypt('hello bob, that\'s truly Alice', 'bob');
 
     showOutput(
         "#step-3-1-output",
         `encrypted message: ${encrypted}`
     );
-}
 
-async function decrypt() {
-    const encrypted = await aliceDevice.encrypt("hello", "bob");
-    const decrypted = await bobDevice.decrypt(encrypted);
-
-    showOutput(
-        "#step-3-3-output",
-        `decrypted message: ${decrypted}`
-    );
-}
-
-async function signThenEncrypt() {
-    const message = await aliceDevice.signThenEncrypt('hello bob, that\'s truly Alice', 'bob');
-
-    showOutput(
-        "#step-4-1-output",
-        `encrypted message: ${message}`
-    );
-}
-
-async function decryptThenVerify() {
-    const encrypted = await aliceDevice.signThenEncrypt('hello bob, that\'s truly Alice', 'bob');
     const decrypted = await bobDevice.decryptThenVerify(encrypted, 'alice');
 
     showOutput(
-        "#step-4-3-output",
+        "#step-3-2-output",
         `decrypted message: ${decrypted.toString('utf-8')}`
     );
 }

@@ -65,7 +65,7 @@ html, body {
 
 body {
 	max-width: 690px;
-	margin: 0 auto;
+    margin: 0 auto;
 }
 
 *,
@@ -77,8 +77,8 @@ body {
 }
 
 h1, h4 {
-    text-align: center;
     font-weight: 400;
+    text-align: center;
 }
 
 button {
@@ -179,35 +179,24 @@ img {
 
 .step {
     opacity: 0;
-	transition: all 1s;
-	margin-bottom: 40px;
+    display: none;
+    transition: all 1s;
+    padding-top: 10px;
+	padding-bottom: 20px;
 }
 
 .revealed {
     opacity: 1;
 }
 
-.hidden {
-    display: none !important;
+.show {
+    display: block;
+}
+
+.hide {
+    display: none!important;
 }
 
 .center {
-	display: block;
-	margin: 0 auto;
-}
-
-.frame {
-    width: 50%;
-    min-width: 200px;
-    height: 300px;
-    border: 2px solid #ebebeb;
-    float: left;
-}
-
-.login-form * {
-    margin-bottom: 20px;
-}
-
-.main-form {
-
+    margin: 0 auto;
 }

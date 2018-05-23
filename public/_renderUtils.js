@@ -1,9 +1,9 @@
 window.onload = function(event) {
-    document.getElementById("intro").classList.add("revealed");
-    setTimeout(() => window.scrollTo(0, 0), 100);
+    document.getElementById("intro").classList.add("show");
+    setTimeout(() => document.getElementById("intro").classList.add("revealed"), 1);
 
-    document.querySelectorAll("button").forEach(buttonsScripts)
-    document.querySelectorAll("pre").forEach(preScripts)
+    document.querySelectorAll("button").forEach(buttonsScripts);
+    document.querySelectorAll("pre").forEach(preScripts);
 };
 
 function buttonsScripts(buttonEl) {
@@ -11,7 +11,7 @@ function buttonsScripts(buttonEl) {
 
     if (buttonEl.hasAttribute('show')) {
         const selector = buttonEl.getAttribute('show');
-        funcs.push(() => stepReveal(selector, buttonEl));
+        funcs.push(() => stepReveal(selector, buttonEl, buttonEl.hasAttribute('toBottom')));
     }
     if (buttonEl.hasAttribute('run')) {
         funcs.push(() => eval(buttonEl.getAttribute('run')));
@@ -34,22 +34,17 @@ function displayCode(selector) {
     el.innerHTML = html;
 }
 
-function stepReveal(stepSelector, button) {
+function stepReveal(stepSelector, button, isBottom) {
     const step = document.querySelector(stepSelector);
 
-    step.classList.add("revealed");
+    step.classList.add("show");
+    setTimeout(() => step.classList.add("revealed"), 1);
     button.classList.add("hidden");
 
     step.scrollIntoView({
-        block: "start",
+        block: isBottom ? "end" : "start",
         behavior: "smooth"
     });
-}
-
-function runCode(func, stepSelector, buttonSelector) {
-    console.log('run code', arguments)
-    func();
-    stepReveal(stepSelector, buttonSelector);
 }
 
 function displayFunction(func) {
@@ -61,8 +56,6 @@ function displayFunction(func) {
 
 function displaySnippet(func) {
     return generateCodeFromFunction(func.toString())
-        .map((line, i) => (i > 0 ? line.replace(/^\s{4}/, "") : line))
-        .filter((line, i, arr) => i !== 0 && i !== arr.length - 1)
         .map(transformToCode)
         .join("\n");
 }
