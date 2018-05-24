@@ -48,10 +48,10 @@ class Device {
         const senderCards = await this.cardManager.searchCards(senderIdentity);
 
         if (senderCards.length > 0) {
-            const bobPublicKeys = senderCards.map(card => card.publicKey);
+            const senderPublicKeys = senderCards.map(card => card.publicKey);
             const encryptedData = virgilCrypto.encrypt(
                 message,
-                bobPublicKeys
+                senderPublicKeys
             );
 
             return encryptedData.toString('base64');

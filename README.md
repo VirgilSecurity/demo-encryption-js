@@ -13,6 +13,8 @@ Safari ✔ 10.1+
 Opera ✔ 42+
 ```
 
+#### Node:
+
 ## Prerequisites
 
 To run this demo you will need:
@@ -56,4 +58,4 @@ then
 npm start
 ```
 
-and pen http://localhost:3000 in your web browser
+and open http://localhost:3000 in your web browser

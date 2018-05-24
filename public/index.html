@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Encryption Demo JS</title>
+    <title>Live End-to-End Encryption Tutorial App</title>
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
@@ -18,10 +18,9 @@
 
 <body>
     <div id="intro" class="step">
-        <h1>Encryption Demo JS</h1>
-        <h4>version 5</h4>
-        <p>This tutorial app explains the basics of using Virgil’s SDK. By the end of the tutorial, you’ll
-            be a master of End-to-End Encryption.
+        <h1>Live End-to-End Encryption Tutorial App</h1>
+        <p>This app explains the basics of using Virgil’s SDK with some real code that runs against your
+            account. By the end, you’ll be a master of End-to-End Encryption. Guaranteed.
         </p>
         <p>
             <b>What is E2EE?</b> When you type in a chat message in your mobile app, it gets “client-side”
@@ -30,49 +29,75 @@
         </p>
         <img src="images/image-1.png" />
         <p>Because data is encrypted on the client devices, neither the networks, nor the servers/clouds,
-            nor you have a clue of what the heck your users are chatting about.
+            nor you have a clue of what the heck your users are chatting about. E2EE is useful in chat
+            apps, healthcare apps or to protect documents/user profile data.
+        </p>
+        <p>
+            Looking for iOS/Android tutorials? Coming soon, for the time being, test-drive this one: the basic principles
+            are the same.
         </p>
         <button show="#step-0" class="center">Get started</button>
     </div>
     <div id="step-0" class="step">
-        <h2>Step 0: Configure SDK</h2>
+        <h2>Step 0: Init Virgil SDK</h2>
         <p>
-            First of all we need to configure our client side SDK with all necessary libraries. We offer our own
-            solutions, like VirgilCrypto or KeyStorage, but you can use your own solutions if you don't
-            trust us (and you don't have to!).
+            Let’s init the SDK in the browser:
+        </p>
+        <pre class="code-editor" func="Device.prototype.configure"></pre>
+        <p>
+            <i>
+                <b>Why do we init so many libraries?</b> Virgil’s SDK is modular, meaning that you can plug
+                in your own libraries for crypto, key storage and so on. Virgil’s default cross-platform
+                libraries work for 99% of our customers though. In some extreme cases, your country or
+                customer may require you to use a specific crypto algorithm or key storage: let us know
+                in the chat window in your dashboard if you suspect that this applies to you and we’ll
+                help.
+            </i>
         </p>
         <p>
-            Here you can see flow for authentication calls to Virgil Card Service and Your App Server. Since we simplify
-            demo server to one endpoint which respond us with JWT token, you don't need to authenticate
-            yourself on demo server.
+            Following the init, your web backend creates a JWT that enables your user to call Virgil’s cloud APIs.
+            Only give a JWT to your users once they passed your authentication!
         </p>
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/JSON_WEB_TOKEN.png"
         />
-        <p>
-            There is configuration part of your Device class (for the full code go
-            <a href="https://github.com/VirgilSecurity/demo-encryption-js/blob/v5/public/model.js#L1" target="_blank">here</a>):
-        </p>
-        <pre class="code-editor" func="Device.prototype.configure"></pre>
-        <pre class="code-editor" snippet="setUpSdk"></pre>
-        <button show="#step-1" run="setUpSdk()">
-            <i class="fas fa-play"></i>"run" code and go to next step
+        <button show="#step-1" run="initDevices()">
+            <i class="fas fa-play"></i>go to next step
         </button>
     </div>
     <div id="step-1" class="step">
         <h2>Step 1: Create & publish user keys at signup</h2>
-        <p>Generate a private & public key for your users when you sign them up.</p>
+        <p>A must-have for E2EE: when users sign up in your app, you’ll need to generate a private & public
+            key for them.</p>
         <p>
             <i>
-                What’s a private/public key pair? You give out your public key to all users, who’ll use it to encrypt
-                data for you that only your private key can decrypt.
+                What’s a private/public key pair? Alice gives out her public key to all users in your product, who’ll
+                use it to encrypt data for her that only her private key can decrypt.
             </i>
         </p>
+
         <img src="./images/Image-2.png" />
         <p>
-            Lets create cards for Alice and Bob with our createCard function:
+            To demo E2EE with 2 users, we created a Device class and created 2 instances of it: one for Alice and
+            one for Bob:
+        </p>
+        <pre class="code-editor" snippet="initDevices"></pre>
+        <p>
+            Take a look at the
+            <a href="https://github.com/VirgilSecurity/demo-encryption-js/blob/v5/public/model.js#L1" target="_blank">Device</a>
+            class.
+        </p>
+        <p>
+            Now, let’s create private and public keys for Alice and Bob. Virgil’s SDK creates a “card” from the public
+            key, which is essentially a public key with metadata to make the public key searchable in
+            Virgil’s cloud-based Cards service:
+        </p>
+        <pre class="code-editor" snippet="createAliceAndBobCards"></pre>
+        <p>
+            Once we have the private keys + cards in the browser, let’s publish them to Virgil’s Cards Service so
+            that users can locate public keys to encrypted data for each other. We’ll also save the private
+            keys to the browser’s local storage for now:
         </p>
         <pre class="code-editor" func="Device.prototype.createCard"></pre>
-        <pre class="code-editor" snippet="createAliceAndBobCards"></pre>
         <button show="#step-1-1" toBottom run="createAliceAndBobCards()">
             <i class="fas fa-play"></i>"run" code
         </button>
@@ -91,11 +116,24 @@
         </p>
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_encryption.png"
         />
-        <pre class="code-editor" func="Device.prototype.decrypt"></pre>
+        <pre class="code-editor" func="Device.prototype.encrypt"></pre>
+        <p>
+            Once the Users receive the signed and encrypted message, they can decrypt it with their own Private Key.
+        </p>
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_decryption.png"
         />
-        <pre class="code-editor" func="Device.prototype.encrypt"></pre>
+        <pre class="code-editor" func="Device.prototype.decrypt"></pre>
         <pre class="code-editor" snippet="encryptAndDecrypt"></pre>
+        <p>
+            <i>
+                <b>Tip:</b> building a group chat or need to add users to encrypted content? Create a key
+                pair for the resource (chat thread): use the public key to encrypt all messages and encrypt
+                the private key with all participant public keys. This way, when you add a new member
+                to the thread, you just re-encrypt the thread private key using for her (using her public
+                key) instead of re-encrypting the entire chat history. Now, she has access to the private
+                key that decrypts the entire chat history. Smart, ha?
+            </i>
+        </p>
         <button show="#step-2-1" toBottom run="encryptAndDecrypt()">
             <i class="fas fa-play"></i>"run" code
         </button>
@@ -116,7 +154,8 @@
             private key and Bob verifies the signature using Alice’s public key!
         </p>
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/encrypt_data.png" />
-        <pre class="code-editor" func="Device.prototype.signThenEncrypt"></pre>
+        <pre class="code-editor" func="Device.prototype.signThenEncrypt"></pre> Once the Users receive the signed and encrypted message, they can decrypt it with their own
+        Private Key and verify signature with a Sender's Card.
         <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/decrypt_data.png" />
         <pre class="code-editor" func="Device.prototype.decryptThenVerify"></pre>
         <pre class="code-editor" snippet="signAndVerify"></pre>
@@ -131,8 +170,21 @@
                 <code>// waiting for message encrypting </code>
             </pre>
             <p>
-                That's it! Fill free to open developer console and try to debug some code from snippet or modify this
-                project from your editor.
+                That's it! Now, open the developer console in your browser take a look at the code (you can even run
+                snippets or use defined variables since it's in global scope). Feel free to reuse this app, it’s all yours and it’s
+                already connected to your Virgil account.
+            </p>
+            <h2>Next step: get started with a ready-baked sample</h2>
+            <img alt="twilio" />
+            <a href="https://github.com/VirgilSecurity/chat-twilio-ios" target="_blank">iOS</a>
+            <a href="https://github.com/VirgilSecurity/chat-twilio-android" target="_blank">Android</a>      
+            <img alt="firebase" />
+            <a href="https://github.com/VirgilSecurity/demo-firebase-ios" target="_blank">iOS</a>
+            <a href="#" target="_blank">Android</a>            
+            <p>
+                <i>
+                    <b>Missing a sample?</b> Let us know in the chat window on your dashboard and we’ll do our best to build it for you!
+                </i>
             </p>
         </div>
     </div>

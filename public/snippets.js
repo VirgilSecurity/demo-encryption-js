@@ -1,4 +1,4 @@
-async function setUpSdk() {
+async function initDevices() {
     window.aliceDevice = new Device();
     window.bobDevice = new Device();
     aliceDevice.configure('alice');
@@ -6,7 +6,7 @@ async function setUpSdk() {
 }
 
 async function createAliceAndBobCards() {
-    const [ aliceCardAndKeyPair, bobCardAndKeyPair ] = await Promise.all([
+    const [aliceCardAndKeyPair, bobCardAndKeyPair] = await Promise.all([
         aliceDevice.createCard(),
         bobDevice.createCard()
     ]);

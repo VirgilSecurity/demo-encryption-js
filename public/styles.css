@@ -10,39 +10,12 @@
 }
 
 @font-face {
-    font-family: 'Muller';
-    font-weight: 500;
-    font-style: normal;
-    font-display: optional;
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.eot");
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.eot?#iefix") format("embedded-opentype"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.woff2") format("woff2"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.woff") format("woff"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: 'Muller';
-    font-weight: 700;
-    font-style: normal;
-    font-display: optional;
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.eot");
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.eot?#iefix") format("embedded-opentype"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.woff2") format("woff2"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.woff") format("woff"), url("https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.ttf") format("truetype");
-}
-
-@font-face {
     font-family: 'Lato';
     font-weight: 400;
     font-style: normal;
     font-display: optional;
     src: url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.eot");
     src: url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.eot?#iefix") format("embedded-opentype"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.woff2") format("woff2"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.woff") format("woff"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: 'Lato';
-    font-weight: 500;
-    font-style: normal;
-    font-display: optional;
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.eot");
-    src: url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.eot?#iefix") format("embedded-opentype"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.woff2") format("woff2"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.woff") format("woff"), url("https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.ttf") format("truetype");
 }
 
 @font-face {
@@ -61,6 +34,7 @@ html, body {
     padding: 0;
     margin: 0;
     letter-spacing: 0.025em;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -96,6 +70,7 @@ button {
     border: 0;
     min-width: 200px;
 }
+
 button:hover {
     background-color: #DA322C;
     box-shadow: 0 18px 20px -15px rgba(158, 54, 33, 0.5);
@@ -112,17 +87,6 @@ input, textarea {
     outline: 0;
     font-family: 'Lato';
     font-size: 14px;
-}
-
-input:not([type]) {
-    background-color: white;
-    height: 44px;
-    transition: all 0.5s;
-    min-width: 250px;
-}
-
-textarea {
-    width: 90%;
 }
 
 p {
