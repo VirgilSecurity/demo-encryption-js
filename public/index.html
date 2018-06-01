@@ -58,7 +58,7 @@
             Following the init, your web backend creates a JWT that enables your user to call Virgil’s cloud APIs.
             Only give a JWT to your users once they passed your authentication!
         </p>
-        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/JSON_WEB_TOKEN.png"
+        <img width="690" src="./images/JSON_WEB_TOKEN.png"
         />
         <button show="#step-1" run="initDevices()">
             <i class="fas fa-play"></i>go to next step
@@ -114,13 +114,13 @@
             Now, your users can simply look up each other’s public keys by their user IDs and encrypt data to each
             other:
         </p>
-        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_encryption.png"
+        <img width="690" src="./images/data_encryption.png"
         />
         <pre class="code-editor" func="Device.prototype.encrypt"></pre>
         <p>
             Once the Users receive the signed and encrypted message, they can decrypt it with their own Private Key.
         </p>
-        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/data_decryption.png"
+        <img width="690" src="./images/data_decryption.png"
         />
         <pre class="code-editor" func="Device.prototype.decrypt"></pre>
         <pre class="code-editor" snippet="encryptAndDecrypt"></pre>
@@ -153,10 +153,10 @@
             How does Bob know that the message was indeed sent by Alice? Simple: Alice signs the message with her
             private key and Bob verifies the signature using Alice’s public key!
         </p>
-        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/encrypt_data.png" />
+        <img width="690" src="./images/encrypt_data.png" />
         <pre class="code-editor" func="Device.prototype.signThenEncrypt"></pre> Once the Users receive the signed and encrypted message, they can decrypt it with their own
         Private Key and verify signature with a Sender's Card.
-        <img width="690" src="https://developer.virgilsecurity.com/docs/1526643399662/img/decrypt_data.png" />
+        <img width="690" src="./images/decrypt_data.png" />
         <pre class="code-editor" func="Device.prototype.decryptThenVerify"></pre>
         <pre class="code-editor" snippet="signAndVerify"></pre>
         <button show="#step-3-1" toBottom run="signAndVerify()">
@@ -175,10 +175,10 @@
                 already connected to your Virgil account.
             </p>
             <h2>Next step: get started with a ready-baked sample</h2>
-            <img width="200" alt="twilio" src="https://cdn.worldvectorlogo.com/logos/twilio-2.svg" />
+            <img width="200" alt="twilio" src="./images/twilio-2.svg" />
             <a href="https://github.com/VirgilSecurity/chat-twilio-ios" target="_blank">iOS</a>
             <a href="https://github.com/VirgilSecurity/chat-twilio-android" target="_blank">Android</a>
-            <img width="200" alt="firebase" src="https://firebase.google.com/downloads/brand-guidelines/PNG/logo-standard.png" />
+            <img width="200" alt="firebase" src="./images/logo-standard.png" />
             <a href="https://github.com/VirgilSecurity/demo-firebase-ios" target="_blank">iOS</a>
             <a href="#" target="_blank">Android</a>
             <p>
