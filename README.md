@@ -25,7 +25,7 @@ To run this demo you will need:
 Clone this repository locally:
 
 ```bash
-git clone https://github.com/VirgilSecurity/demo-encryption-js/tree/v5
+git clone https://github.com/VirgilSecurity/demo-encryption-js.git
 ```
 
 Move to the project folder:
