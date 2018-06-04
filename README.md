@@ -13,8 +13,6 @@ Safari ✔ 10.1+
 Opera ✔ 42+
 ```
 
-#### Node:
-
 ## Prerequisites
 
 To run this demo you will need:
@@ -46,9 +44,9 @@ Add config.json file to root folder
 
 ```
 {
-    "apiKey": "API PRIVATE KEY FROM DASHBOARD",
-    "apiKeyId": "API KEY ID FROM DASHBOARD",
-    "appId": "APP ID FROM DASHBOARD"
+    "API_KEY": "API PRIVATE KEY FROM DASHBOARD",
+    "API_KEY_ID": "API KEY ID FROM DASHBOARD",
+    "APP_ID": "APP ID FROM DASHBOARD"
 }
 ```
 
