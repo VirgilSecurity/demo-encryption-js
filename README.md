@@ -31,7 +31,7 @@ git clone https://github.com/VirgilSecurity/demo-encryption-js.git
 Move to the project folder:
 
 ```bash
-cd encryption-demo-js
+cd demo-encryption-js
 ```
 
 Install dependencies:
