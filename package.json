@@ -6,8 +6,12 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Virgil Security Inc. <support@virgilsecurity.com>",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VirgilSecurity/demo-encryption-js"
+  },
   "dependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
