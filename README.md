@@ -57,3 +57,6 @@ npm start
 ```
 
 and open http://localhost:3000 in your web browser
+
+## Help
+Our support team is here to help you. Find out more information about JS Demo and common mistakes on our [Help Center](https://help.virgilsecurity.com/virgil-e2ee-js-demo)
