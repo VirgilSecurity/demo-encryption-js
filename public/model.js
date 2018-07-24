@@ -44,14 +44,14 @@ class Device {
         return { card, keyPair };
     };
 
-    async encrypt (message, senderIdentity) {
-        const senderCards = await this.cardManager.searchCards(senderIdentity);
+    async encrypt (message, recipientIdentity) {
+        const recipientCards = await this.cardManager.searchCards(recipientIdentity);
 
-        if (senderCards.length > 0) {
-            const senderPublicKeys = senderCards.map(card => card.publicKey);
+        if (recipientCards.length > 0) {
+            const recipientPublicKeys = recipientCards.map(card => card.publicKey);
             const encryptedData = virgilCrypto.encrypt(
                 message,
-                senderPublicKeys
+                recipientPublicKeys
             );
 
             return encryptedData.toString('base64');
