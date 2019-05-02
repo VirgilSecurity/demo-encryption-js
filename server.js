@@ -7,7 +7,7 @@ const { VirgilCrypto, VirgilAccessTokenSigner } = require('virgil-crypto');
 app.use(bodyParser.json())
 
 // Enable cors, you don't need this, if you using same domain
-app.use(function(req, res, next) {
+app.use(function(_req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
@@ -26,7 +26,7 @@ const generator = new JwtGenerator({
     accessTokenSigner: new VirgilAccessTokenSigner(crypto)
 });
 
-app.post('/generate_jwt', (req, res) => {
+app.post('/virgil-jwt', (req, res) => {
     if (!req.body || !req.body.identity) return res.status(400).send('identity param is required');
     const virgilJwtToken = generator.generateToken(req.body.identity);
     res.send(virgilJwtToken.toString());

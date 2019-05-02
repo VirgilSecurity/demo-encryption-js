@@ -8,7 +8,7 @@ class Device {
         window.cardCrypto = new VirgilCrypto.VirgilCardCrypto(virgilCrypto);
         window.cardVerifier = new Virgil.VirgilCardVerifier(cardCrypto);
 
-        const getJwt = () => fetch('http://localhost:3000/generate_jwt', {
+        const getJwt = () => fetch('http://localhost:3000/virgil-jwt', {
             headers: new Headers({ 'Content-Type' : 'application/json'}),
             method: 'POST',
             body: JSON.stringify({ identity })
